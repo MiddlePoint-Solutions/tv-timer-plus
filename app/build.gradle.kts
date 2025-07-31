@@ -1,7 +1,10 @@
+import com.android.build.api.dsl.Packaging
+
 plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.kotlin.android)
   alias(libs.plugins.kotlin.compose)
+  kotlin("plugin.serialization") version "2.0.21"
 }
 
 android {
@@ -33,6 +36,14 @@ android {
   buildFeatures {
     compose = true
   }
+
+
+  packaging {
+    resources {
+      excludes += "META-INF/*"
+    }
+  }
+
 }
 
 dependencies {
@@ -47,8 +58,17 @@ dependencies {
   implementation(libs.androidx.tv.material)
   implementation(libs.androidx.lifecycle.runtime.ktx)
   implementation(libs.androidx.activity.compose)
+
   androidTestImplementation(platform(libs.androidx.compose.bom))
   androidTestImplementation(libs.androidx.ui.test.junit4)
   debugImplementation(libs.androidx.ui.tooling)
   debugImplementation(libs.androidx.ui.test.manifest)
+
+  // Ktor
+  implementation(libs.ktor.server.core)
+  implementation(libs.ktor.server.netty)
+  implementation(libs.ktor.server.content.negotiation)
+  implementation(libs.ktor.serialization.kotlinx.json)
+  implementation(libs.ktor.network.tls.certificates)
+
 }
