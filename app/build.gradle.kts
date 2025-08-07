@@ -1,4 +1,6 @@
 import com.android.build.api.dsl.Packaging
+import com.android.build.gradle.internal.cxx.configure.abiOf
+import com.android.build.gradle.tasks.NativeBuildSystem
 
 plugins {
   alias(libs.plugins.android.application)
@@ -18,6 +20,10 @@ android {
     versionCode = 1
     versionName = "1.0"
 
+    ndk {
+      abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
+    }
+
   }
 
   buildTypes {
@@ -33,8 +39,10 @@ android {
   kotlinOptions {
     jvmTarget = "11"
   }
+
   buildFeatures {
     compose = true
+    buildConfig = true
   }
 
 
@@ -42,7 +50,12 @@ android {
     resources {
       excludes += "META-INF/*"
     }
+
+    jniLibs {
+      useLegacyPackaging = true
+    }
   }
+
 
 }
 
@@ -56,8 +69,15 @@ dependencies {
   implementation(libs.androidx.ui.tooling.preview)
   implementation(libs.androidx.tv.foundation)
   implementation(libs.androidx.tv.material)
-  implementation(libs.androidx.lifecycle.runtime.ktx)
   implementation(libs.androidx.activity.compose)
+
+  implementation(libs.androidx.lifecycle.runtime.ktx)
+  implementation(libs.androidx.lifecycle.viewmodel.ktx)
+  implementation(libs.androidx.lifecycle.livedata.ktx)
+
+
+  implementation(libs.dadb)
+  implementation(libs.kermit)
 
   androidTestImplementation(platform(libs.androidx.compose.bom))
   androidTestImplementation(libs.androidx.ui.test.junit4)
@@ -66,7 +86,7 @@ dependencies {
 
   // Ktor
   implementation(libs.ktor.server.core)
-  implementation(libs.ktor.server.netty)
+  implementation(libs.ktor.server.cio)
   implementation(libs.ktor.server.content.negotiation)
   implementation(libs.ktor.serialization.kotlinx.json)
   implementation(libs.ktor.network.tls.certificates)
