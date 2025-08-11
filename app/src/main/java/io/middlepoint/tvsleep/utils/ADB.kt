@@ -1,7 +1,8 @@
-package com.draco.ladb.utils
+package io.middlepoint.tvsleep.utils
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.AppOpsManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
@@ -10,7 +11,10 @@ import android.provider.Settings
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import co.touchlab.kermit.Logger
+import com.draco.ladb.utils.DnsDiscover
 import io.middlepoint.tvsleep.BuildConfig
+import kotlinx.coroutines.*
 import java.io.BufferedReader
 import java.io.File
 import java.io.PrintStream
@@ -18,22 +22,17 @@ import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.seconds
 
 class ADB(private val context: Context) {
-  companion object {
-    const val MAX_OUTPUT_BUFFER_SIZE = 1024 * 16
-    const val OUTPUT_BUFFER_DELAY_MS = 100L
 
-    @SuppressLint("StaticFieldLeak")
-    @Volatile
-    private var instance: ADB? = null
-    fun getInstance(context: Context): ADB = instance ?: synchronized(this) {
-      instance ?: ADB(context).also { instance = it }
-    }
-  }
-
+  private val logger = Logger.withTag("ADB")
   private val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context)
 
   private val adbPath = "${context.applicationInfo.nativeLibraryDir}/libadb.so"
   private val scriptPath = "${context.getExternalFilesDir(null)}/script.sh"
+
+  val appUsageForegroundWatcher = AppUsageForegroundWatcher(context) { pkg ->
+    // e.g., update UI or log
+    logger.d("Foreground: $pkg")
+  }
 
   /**
    * Is the shell ready to handle commands?
@@ -60,6 +59,57 @@ class ADB(private val context: Context) {
    * Single shell instance where we can pipe commands to
    */
   private var shellProcess: Process? = null
+
+  private val monitorScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+  private var monitorJob: Job? = null
+
+  private fun startAdbSysdumpMonitoring() {
+    if (monitorJob?.isActive == true) {
+      debug("Monitor is already running.")
+      return
+    }
+    monitorJob = monitorScope.launch {
+      debug("Window monitor coroutine started.")
+      while (isActive) {
+        try {
+          val output = withContext(Dispatchers.IO) {
+            val checkProcess = adb(false, listOf("shell", "dumpsys window windows | grep mCurrentFocus"))
+            val reader = BufferedReader(checkProcess.inputStream.reader())
+            val line = reader.readLine()
+            checkProcess.waitFor()
+            line
+          }
+
+          if (output != null && output.contains("com.android.tv.settings")) {
+            debug("Settings app detected in foreground. Force-stopping...")
+            withContext(Dispatchers.IO) {
+              val stopProcess = adb(false, listOf("shell", "am", "force-stop", "com.android.tv.settings"))
+              stopProcess.waitFor()
+            }
+          }
+
+          delay(250)
+        } catch (e: CancellationException) {
+          debug("Window monitor coroutine cancelled.")
+          break // Exit loop on cancellation
+        } catch (e: Exception) {
+          debug("An error occurred in the window monitor coroutine: ${e.message}")
+          delay(1000) // Delay to prevent rapid-fire error loops
+        }
+      }
+      debug("Window monitor coroutine stopped.")
+    }
+  }
+
+  fun stopMonitoring() {
+    if (monitorJob?.isActive != true) {
+      debug("Monitor is not running.")
+      return
+    }
+    monitorJob?.cancel()
+    monitorJob = null
+    debug("Requested to stop window monitor.")
+  }
 
   /**
    * Returns the user buffer size if valid, else the default
@@ -166,10 +216,10 @@ class ADB(private val context: Context) {
 
       val nowTime = System.currentTimeMillis()
       val maxTimeoutTime = nowTime + 10.seconds.inWholeMilliseconds
-      val minDnsScanTime = (DnsDiscover.aliveTime ?: nowTime) + 3.seconds.inWholeMilliseconds
+      val minDnsScanTime = (DnsDiscover.Companion.aliveTime ?: nowTime) + 3.seconds.inWholeMilliseconds
       while (true) {
         val nowTime = System.currentTimeMillis()
-        val pendingResolves = DnsDiscover.pendingResolves.get()
+        val pendingResolves = DnsDiscover.Companion.pendingResolves.get()
 
         // Wait for pending DNS resolves to finish and the minimum scan time to elapse...
         if (nowTime >= minDnsScanTime && !pendingResolves) {
@@ -188,7 +238,7 @@ class ADB(private val context: Context) {
         Thread.sleep(1_000)
       }
 
-      val adbPort = DnsDiscover.adbPort
+      val adbPort = DnsDiscover.Companion.adbPort
       if (adbPort != null)
         debug("Best ADB port discovered: $adbPort")
       else
@@ -282,6 +332,16 @@ class ADB(private val context: Context) {
 
     _running.postValue(true)
     tryingToPair = false
+
+
+    // TODO: if app usage is not enabled or the user wants to use sysdump for better control
+//    startAdbSysdumpMonitoring()
+
+    if(!hasUsageStatsPermission(context)) {
+      sendToShellProcess("appops set ${context.packageName} GET_USAGE_STATS allow")
+    }
+
+    appUsageForegroundWatcher.start()
 
     return true
   }
@@ -463,6 +523,29 @@ class ADB(private val context: Context) {
       Log.d("DEBUG", msg)
       if (outputBufferFile.exists())
         outputBufferFile.appendText("* $msg" + System.lineSeparator())
+    }
+  }
+
+  fun hasUsageStatsPermission(context: Context): Boolean {
+    val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+    val mode = appOps.checkOpNoThrow(
+      AppOpsManager.OPSTR_GET_USAGE_STATS,
+      android.os.Process.myUid(),
+      context.packageName
+    )
+    return mode == AppOpsManager.MODE_ALLOWED
+  }
+
+  companion object {
+
+    const val MAX_OUTPUT_BUFFER_SIZE = 1024 * 16
+    const val OUTPUT_BUFFER_DELAY_MS = 100L
+
+    @SuppressLint("StaticFieldLeak")
+    @Volatile
+    private var instance: ADB? = null
+    fun getInstance(context: Context): ADB = instance ?: synchronized(this) {
+      instance ?: ADB(context).also { instance = it }
     }
   }
 }

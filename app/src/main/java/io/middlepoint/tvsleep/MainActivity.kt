@@ -2,8 +2,8 @@ package io.middlepoint.tvsleep
 
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.accessibility.AccessibilityNodeInfo.ACTION_CLEAR_FOCUS
@@ -13,9 +13,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -24,12 +28,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.map
 import androidx.tv.material3.Button
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Surface
@@ -45,7 +50,6 @@ import io.middlepoint.tvsleep.ui.theme.TVsleepTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -111,27 +115,72 @@ class MainActivity : ComponentActivity() {
           modifier = Modifier.fillMaxSize(),
           shape = RectangleShape
         ) {
-          Column {
-            Text(status)
 
-            Spacer(modifier = Modifier.height(25.dp))
 
-//            Button(onClick = {
-//              if (!devicePolicyManager.isAdminActive(deviceAdminComponent)) {
-//                val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
-//                intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, deviceAdminComponent)
-//                intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Explanation")
-//                adminActivationLauncher.launch(intent)
-//              } else {
-//                Toast.makeText(this@MainActivity, "Device Admin already active", Toast.LENGTH_SHORT)
-//                  .show()
-//              }
-//            }) {
-//              Text("Enable Admin")
-//            }
+          Row {
+            Column(
+              modifier = Modifier.fillMaxWidth(0.4f)
+            ) {
+              Text(status)
+
+              Spacer(modifier = Modifier.height(25.dp))
+
+              //            Button(onClick = {
+              //              if (!devicePolicyManager.isAdminActive(deviceAdminComponent)) {
+              //                val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
+              //                intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, deviceAdminComponent)
+              //                intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Explanation")
+              //                adminActivationLauncher.launch(intent)
+              //              } else {
+              //                Toast.makeText(this@MainActivity, "Device Admin already active", Toast.LENGTH_SHORT)
+              //                  .show()
+              //              }
+              //            }) {
+              //              Text("Enable Admin")
+              //            }
+            }
+
+            Column(
+              modifier = Modifier
+                .fillMaxHeight()
+                .fillMaxWidth(0.6f),
+              horizontalAlignment = Alignment.CenterHorizontally,
+              verticalArrangement = Arrangement.Center
+            ) {
+
+              Button(
+                onClick = {
+                  try {
+                    requestOverlayPermission(this@MainActivity)
+                  } catch (e: Exception) {
+                    e.printStackTrace()
+                    viewModel.sendCommand("appops set $packageName SYSTEM_ALERT_WINDOW allow")
+                  }
+                }
+              ) {
+                Text("Request Overlay Permission")
+              }
+
+              Button(
+                onClick = { startService((Intent(this@MainActivity, OverlayService::class.java))) }
+              ) {
+                Text("Show Overlay")
+              }
+
+            }
           }
         }
       }
+    }
+  }
+
+  fun requestOverlayPermission(context: Context) {
+    if (!Settings.canDrawOverlays(context)) {
+      val intent = Intent(
+        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+        "package:${context.packageName}".toUri()
+      ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+      context.startActivity(intent)
     }
   }
 

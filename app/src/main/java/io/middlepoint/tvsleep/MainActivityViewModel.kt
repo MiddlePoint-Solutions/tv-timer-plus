@@ -10,7 +10,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.draco.ladb.utils.ADB
+import io.middlepoint.tvsleep.utils.ADB
 import com.draco.ladb.utils.DnsDiscover
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
@@ -55,6 +55,10 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
       }
       callback?.invoke(success)
     }
+  }
+
+  fun sendCommand(command: String) {
+    adb.sendToShellProcess(command)
   }
 
   /**
