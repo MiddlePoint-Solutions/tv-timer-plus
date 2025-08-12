@@ -341,7 +341,7 @@ class ADB(private val context: Context) {
       sendToShellProcess("appops set ${context.packageName} GET_USAGE_STATS allow")
     }
 
-    appUsageForegroundWatcher.start()
+    appUsageForegroundWatcher.start(500)
 
     return true
   }

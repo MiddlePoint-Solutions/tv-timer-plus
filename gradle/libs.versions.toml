@@ -11,6 +11,7 @@ activityCompose = "1.10.1"
 ktor = "3.2.3"
 dadb = "1.2.10"
 kermit = "2.0.6"
+ktlint = "13.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -43,4 +44,5 @@ ktor-network-tls-certificates = { group = "io.ktor", name = "ktor-network-tls-ce
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
 
