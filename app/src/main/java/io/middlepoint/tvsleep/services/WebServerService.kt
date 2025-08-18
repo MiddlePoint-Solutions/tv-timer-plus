@@ -6,7 +6,6 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
-import android.view.accessibility.AccessibilityNodeInfo
 import androidx.core.app.NotificationCompat
 import co.touchlab.kermit.Logger
 import dadb.Dadb
@@ -15,7 +14,6 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
-import io.middlepoint.tvsleep.MyAccessibilityService
 import io.middlepoint.tvsleep.R
 import io.middlepoint.tvsleep.utils.ADB
 import kotlinx.coroutines.CoroutineScope
@@ -89,17 +87,6 @@ class WebServerService : Service() {
         routing {
             get("/") {
                 call.respondText("Hello world")
-            }
-
-            get("/clearFocus") {
-                call.respondText("ACTION_CLEAR_FOCUS")
-                MyAccessibilityService.Companion.instance?.performGlobalAction(AccessibilityNodeInfo.ACTION_CLEAR_FOCUS)
-            }
-
-            get("/clearSelection") {
-                // WORKING
-                call.respondText("ACTION_CLEAR_SELECTION")
-                MyAccessibilityService.Companion.instance?.performGlobalAction(AccessibilityNodeInfo.ACTION_CLEAR_SELECTION)
             }
 
             get("/check") {

@@ -5,7 +5,8 @@ This project is an Android TV application named "TV Sleep". Its primary purpose 
 The application is built with Kotlin and uses the following key technologies:
 *   **Android SDK:** The core platform for building the application.
 *   **Jetpack Compose:** For building the user interface.
-*   **Kotlin Coroutines:** For asynchronous programming, particularly for the window monitoring service.
+*   **Kotlin Coroutines:** For asynchronous programming
+* , particularly for the window monitoring service.
 *   **Ktor:** For networking capabilities, likely for remote control or communication.
 *   **Dadb:** A library for ADB (Android Debug Bridge) communication, used to monitor and control the device.
 

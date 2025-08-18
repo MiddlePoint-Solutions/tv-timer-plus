@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">TVsleep</string>
+    <string name="label_timer">Timer</string>
+    <string name="label_actions">Actions</string>
+    <string name="label_delete">Delete</string>
+    <string name="label_start">Start</string>
+    <string name="label_reset">Reset</string>
+    <string name="hint_label">Label</string>
+    <string name="label_add_timer">Add timer</string>
+    <string name="label_plus_one_minute">+ 1:00</string>
+    <string name="label_time_up">Time\'s up</string>
+    <string name="label_stop">STOP</string>
 </resources>
