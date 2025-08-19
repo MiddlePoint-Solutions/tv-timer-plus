@@ -44,7 +44,7 @@ class MainActivityViewModel(
 
     private var timer: Timer? = null
 
-    private val _homeState = MutableLiveData<HomeState>(HomeState.Idle)
+    private val _homeState = MutableLiveData<HomeState>()
     val homeState: LiveData<HomeState> = _homeState
 
     val isPairing = MutableLiveData<Boolean>()

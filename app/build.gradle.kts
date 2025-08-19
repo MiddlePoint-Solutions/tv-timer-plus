@@ -67,6 +67,7 @@ dependencies {
     implementation(libs.androidx.tv.material)
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.navigation.compose)
 
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
@@ -75,6 +76,7 @@ dependencies {
     implementation(libs.dadb)
     implementation(libs.kermit)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.preference.ktx)
 
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
