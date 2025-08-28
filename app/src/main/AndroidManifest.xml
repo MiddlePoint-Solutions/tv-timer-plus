@@ -36,7 +36,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.TVsleep">
+        android:theme="@style/Theme.App.Starting">
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTask"

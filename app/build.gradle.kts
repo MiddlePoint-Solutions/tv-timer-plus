@@ -1,7 +1,3 @@
-import com.android.build.api.dsl.Packaging
-import com.android.build.gradle.internal.cxx.configure.abiOf
-import com.android.build.gradle.tasks.NativeBuildSystem
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -68,6 +64,7 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.splash)
 
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)

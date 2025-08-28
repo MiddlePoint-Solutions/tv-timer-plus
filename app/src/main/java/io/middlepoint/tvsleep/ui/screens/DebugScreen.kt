@@ -1,6 +1,8 @@
 package io.middlepoint.tvsleep.ui.screens
 
+import android.content.Context
 import android.content.Intent
+import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -17,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.navigation.NavController
 import androidx.tv.material3.Button
 import androidx.tv.material3.ExperimentalTvMaterial3Api
@@ -59,7 +62,7 @@ fun DebugScreen(
         Button(
             onClick = {
                 try {
-                    (context as? MainActivity)?.requestOverlayPermission(context)
+                    requestOverlayPermission(context)
                 } catch (e: Exception) {
                     e.printStackTrace()
                     viewModel.sendCommand("appops set ${context.packageName} SYSTEM_ALERT_WINDOW allow")
@@ -125,5 +128,16 @@ fun DebugScreen(
         ) {
             Text("Stop Web Server")
         }
+    }
+}
+
+fun requestOverlayPermission(context: Context) {
+    if (!Settings.canDrawOverlays(context)) {
+        val intent =
+            Intent(
+                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                "package:${context.packageName}".toUri(),
+            ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        context.startActivity(intent)
     }
 }

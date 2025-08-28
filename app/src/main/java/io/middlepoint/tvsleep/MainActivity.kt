@@ -44,6 +44,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navOptions
 import androidx.tv.material3.Button
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
@@ -98,10 +99,7 @@ class MainActivity : ComponentActivity() {
                         enterTransition = { fadeIn(spring(stiffness = Spring.StiffnessMedium)) },
                         exitTransition = { fadeOut(spring(stiffness = Spring.StiffnessMedium)) },
                     ) {
-                        composable<Start>(
-//                            enterTransition = { fadeIn(spring(stiffness = Spring.StiffnessMedium)) },
-//                            exitTransition = { fadeOut() },
-                        ) {
+                        composable<Start> {
                             StartScreen(viewModel)
                         }
                         composable<Home> {
@@ -120,40 +118,30 @@ class MainActivity : ComponentActivity() {
 
                     val backStackEntry by navController.currentBackStackEntryAsState()
 
-                    BackHandler {
-                        logger.d { "BackHandler: $backStackEntry" }
-//                        if (backStackEntry?.destination?.route == Home::class.qualifiedName) {
-//                            finish()
-//                        } else {
-//                            navController.popBackStack()
-//                        }
-                        finish()
-                    }
+//                    BackHandler {
+//                        logger.d { "BackHandler: $backStackEntry" }
+// //                        if (backStackEntry?.destination?.route == Home::class.qualifiedName) {
+// //                            finish()
+// //                        } else {
+// //                            navController.popBackStack()
+// //                        }
+//                        finish()
+//                    }
 
                     LaunchedEffect(homeState) {
                         homeState?.let { state ->
-                            navController.navigate(state.mapToScreen())
+                            navController.navigate(
+                                route = state.mapToScreen(),
+                                navOptions =
+                                    navOptions {
+                                        popUpTo(Start) { inclusive = true }
+                                    },
+                            )
                         }
                     }
                 }
             }
         }
-    }
-
-    fun requestOverlayPermission(context: Context) {
-        if (!Settings.canDrawOverlays(context)) {
-            val intent =
-                Intent(
-                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                    "package:${context.packageName}".toUri(),
-                ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            context.startActivity(intent)
-        }
-    }
-
-    private fun launchAccessibilityService() {
-        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-        startActivity(intent)
     }
 }
 
@@ -252,26 +240,7 @@ fun MainTimer(
         ConstraintLayout(
             modifier = Modifier.fillMaxSize(),
         ) {
-            val (label, timer, optionTimer) = createRefs()
-            Button(
-                onClick = { },
-                enabled = false,
-                modifier =
-                    Modifier.constrainAs(label) {
-                        linkTo(start = parent.start, end = parent.end)
-                        top.linkTo(parent.top, margin = 20.dp)
-                    },
-            ) {
-                Text(
-                    text = stringResource(R.string.hint_label),
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    style =
-                        MaterialTheme.typography.bodyMedium.copy(
-                            letterSpacing = 0.sp,
-                            fontWeight = FontWeight.W400,
-                        ),
-                )
-            }
+            val (timer, optionTimer) = createRefs()
             val labelTimerVisibility =
                 if (timerScreenState == TimerState.Paused) timerVisibility else true
             AnimatedVisibility(

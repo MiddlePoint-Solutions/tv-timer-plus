@@ -15,11 +15,19 @@ import co.touchlab.kermit.Logger
 import com.draco.ladb.utils.DnsDiscover
 import io.middlepoint.tvsleep.AdbState
 import io.middlepoint.tvsleep.BuildConfig
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.BufferedReader
 import java.io.File
 import java.io.PrintStream
 import java.util.concurrent.TimeUnit
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration.Companion.seconds
 
 class ADB(
@@ -369,11 +377,11 @@ class ADB(
         // TODO: if app usage is not enabled or the user wants to use sysdump for better control
 //    startAdbSysdumpMonitoring()
 
-        if (!hasUsageStatsPermission(context)) {
-            sendToShellProcess("appops set ${context.packageName} GET_USAGE_STATS allow")
-        }
-
-        appUsageForegroundWatcher.start(500)
+        // TODO: refactor this into separate function
+//        if (!hasUsageStatsPermission(context)) {
+//            sendToShellProcess("appops set ${context.packageName} GET_USAGE_STATS allow")
+//        }
+//        appUsageForegroundWatcher.start(500)
 
         return true
     }

@@ -16,7 +16,7 @@ kermit = "2.0.6"
 ktlint = "13.0.0"
 constraintlayout = "1.1.1"
 preferenceKtx = "1.2.1"
-
+splash-screen ="1.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -37,6 +37,7 @@ androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifec
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "constraintlayout" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
+androidx-splash = { module = "androidx.core:core-splashscreen", version.ref = "splash-screen" }
 dadb = { group = "dev.mobile", name = "dadb", version.ref = "dadb" }
 kermit = { group = "co.touchlab", name = "kermit", version.ref = "kermit" }
 androidx-preference-ktx = { group = "androidx.preference", name = "preference-ktx", version.ref = "preferenceKtx" }
