@@ -24,7 +24,6 @@ import androidx.navigation.NavController
 import androidx.tv.material3.Button
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Text
-import io.middlepoint.tvsleep.MainActivity
 import io.middlepoint.tvsleep.MainActivityViewModel
 import io.middlepoint.tvsleep.services.OverlayService
 import io.middlepoint.tvsleep.services.WebServerService
@@ -91,11 +90,11 @@ fun DebugScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        Button(
-            onClick = { viewModel.startTimer(30000) },
-        ) {
-            Text("Start Timer")
-        }
+//        Button(
+//            onClick = { viewModel.startTimer(30000) },
+//        ) {
+//            Text("Start Timer")
+//        }
 
         Spacer(modifier = Modifier.height(20.dp))
 

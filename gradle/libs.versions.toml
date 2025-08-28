@@ -7,7 +7,7 @@ composeBom = "2025.08.00"
 tvFoundation = "1.0.0-alpha12"
 tvMaterial = "1.0.1"
 materialIcons = "1.7.8"
-lifecycleRuntimeKtx = "2.9.2"
+androidx-lifecycle = "2.9.3"
 activityCompose = "1.10.1"
 navigationCompose = "2.9.3"
 ktor = "3.2.3"
@@ -32,8 +32,7 @@ androidx-compose-runtime-livedata = { group = "androidx.compose.runtime", name =
 androidx-tv-foundation = { group = "androidx.tv", name = "tv-foundation", version.ref = "tvFoundation" }
 androidx-tv-material = { group = "androidx.tv", name = "tv-material", version.ref = "tvMaterial" }
 androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "materialIcons" }
-androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
-androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycleRuntimeKtx" }
+androidx-lifecycle-viewmodel = { module = "androidx.lifecycle:lifecycle-runtime", version.ref = "androidx-lifecycle" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "constraintlayout" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }

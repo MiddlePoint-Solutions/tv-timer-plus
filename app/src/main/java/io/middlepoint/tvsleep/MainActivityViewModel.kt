@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.util.Timer
 import java.util.TimerTask
+import kotlin.time.Duration.Companion.milliseconds
 
 @Suppress("ktlint:standard:no-consecutive-comments")
 class MainActivityViewModel(
@@ -33,7 +34,7 @@ class MainActivityViewModel(
     private val _outputText = MutableLiveData<String>()
     val outputText: LiveData<String> = _outputText
 
-    private val _timerState = MutableLiveData<TimerState>()
+    private val _timerState = MutableLiveData<TimerState>(TimerState.Stopped)
     val timerState: LiveData<TimerState> = _timerState
 
     private val _tick = MutableLiveData<Long>()
@@ -65,6 +66,9 @@ class MainActivityViewModel(
     private val _viewModelHasStartedADB = MutableLiveData(false)
     val viewModelHasStartedADB: LiveData<Boolean> = _viewModelHasStartedADB
 
+    private val _currentTimerTotalDuration = MutableLiveData<Long>()
+    val currentTimerTotalDuration: LiveData<Long> = _currentTimerTotalDuration
+
     init {
         startOutputThread()
         dnsDiscover.scanAdbPorts()
@@ -72,6 +76,73 @@ class MainActivityViewModel(
         viewModelScope.launch {
             adb.state.observeForever { state ->
                 _homeState.postValue(state.mapToHomeState())
+            }
+        }
+    }
+
+    fun onTimeSelected(durationMillis: Long) {
+        _currentTimerTotalDuration.postValue(durationMillis)
+        _timerLabel.postValue(durationMillis.toHhMmSs())
+        _tick.postValue(durationMillis) // Initialize tick to full duration
+        startTimer(durationMillis)
+        _timerState.postValue(TimerState.Started)
+    }
+
+    fun togglePlayPause() {
+        when (_timerState.value) {
+            is TimerState.Started -> {
+                timer?.cancel()
+                _timerState.postValue(TimerState.Paused)
+            }
+            is TimerState.Paused -> {
+                // Resume timer
+                val currentTick = _tick.value ?: return
+                if (currentTick > 0) {
+                    startTimer(currentTick) // Restart timer with remaining duration
+                    _timerState.postValue(TimerState.Started)
+                }
+            }
+            else -> {
+                // Do nothing or log error
+                logger.w { "togglePlayPause called in an unexpected state: ${_timerState.value}" }
+            }
+        }
+    }
+
+    fun stopTimerAndGoToSetup() {
+        timer?.cancel()
+        _timerState.postValue(TimerState.Stopped)
+        // Reset relevant LiveData for a fresh start in TimerSetup
+        _tick.postValue(0L)
+        _timerLabel.postValue("")
+        _currentTimerTotalDuration.postValue(0L)
+    }
+
+    // Placeholder for actual implementation based on requirements
+    fun handleMainScreenOptionButtonPressed() {
+        // Example: Add 1 minute to the timer if it's running or paused
+        // Or reset the timer if it's finished
+        when (val currentState = _timerState.value) {
+            is TimerState.Started -> {
+                // Add 1 minute
+                val newDuration = (_tick.value ?: 0L) + 60000L
+                _currentTimerTotalDuration.postValue((_currentTimerTotalDuration.value ?: 0L) + 60000L)
+                timer?.cancel()
+                startTimer(newDuration)
+            }
+            is TimerState.Paused -> {
+                // Add 1 minute to paused time
+                val newTick = (_tick.value ?: 0L) + 60000L
+                _tick.postValue(newTick)
+                _timerLabel.postValue(newTick.toHhMmSs())
+                _currentTimerTotalDuration.postValue((_currentTimerTotalDuration.value ?: 0L) + 60000L)
+            }
+            is TimerState.Finished -> {
+                // Reset to setup screen
+                stopTimerAndGoToSetup()
+            }
+            else -> {
+                logger.w { "Option button pressed in unexpected state: $currentState" }
             }
         }
     }
@@ -94,31 +165,34 @@ class MainActivityViewModel(
         adb.sendToShellProcess(command)
     }
 
-    fun startTimer(duration: Long) {
+    private fun startTimer(duration: Long) {
+        timer?.cancel() // Cancel any existing timer
         val delay = 0L
-        val period = 250L
+        val period = 250L // Consider making this a constant
         timer = Timer()
         var interval = duration
+        _tick.postValue(interval) // Ensure tick is updated immediately
 
         timer?.schedule(
             object : TimerTask() {
                 override fun run() {
                     interval -= period
-                    val newState = TimerState.Running(duration, interval)
-//                    _timerState.postValue(newState)
                     _tick.postValue(interval)
 
-                    if (interval % ONE_THOUSAND_INT == ZERO_LONG) _timerLabel.postValue(interval.toHhMmSs())
-                    if (interval <= ZERO_LONG) {
-                        if (_timerState.value != TimerState.Finished) _timerState.postValue(TimerState.Finished)
-                    } else {
-                        if (_timerState.value != TimerState.Started) _timerState.postValue(TimerState.Started)
+                    if (interval % ONE_THOUSAND_INT == ZERO_LONG || interval == duration) { // Update label also at the start
+                        _timerLabel.postValue(interval.toHhMmSs())
                     }
 
-                    if (interval == 0L) {
+                    if (interval <= ZERO_LONG) {
                         timer?.cancel()
-                    } else if (interval < 0) {
-//                        stopTimerService()
+                        if (_timerState.value != TimerState.Finished) {
+                            _timerState.postValue(TimerState.Finished)
+                        }
+                    } else {
+                        // Ensure state is started if not already
+                        if (_timerState.value !is TimerState.Started) {
+                            _timerState.postValue(TimerState.Started)
+                        }
                     }
                 }
             },
