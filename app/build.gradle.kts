@@ -67,7 +67,6 @@ dependencies {
     implementation(libs.androidx.splash)
 
     implementation(libs.androidx.lifecycle.viewmodel)
-    implementation(libs.androidx.compose.runtime.livedata)
 
     implementation(libs.dadb)
     implementation(libs.kermit)

@@ -43,7 +43,7 @@ class WebServerService : Service() {
             serviceScope.launch {
                 createWebServer(
                     showStatus = { adb.debug(it) },
-                    sendShellCommand = { adb.sendToShellProcess(it) },
+                    sendShellCommand = { /*adb.sendToShellProcess(it) TODO*/ },
                 ).start(wait = true)
             }
 

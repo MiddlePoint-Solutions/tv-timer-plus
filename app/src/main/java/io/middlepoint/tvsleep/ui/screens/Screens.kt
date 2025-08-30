@@ -10,10 +10,13 @@ sealed class Screen
 data object Start : Screen()
 
 @Serializable
-data object Home : Screen()
+data object TimeSelection : Screen()
 
 @Serializable
-data object Setup : Screen()
+data object Timer : Screen()
+
+@Serializable
+data object SetupADB : Screen()
 
 @Serializable
 data object Connecting : Screen()
@@ -24,7 +27,8 @@ data object Debug : Screen()
 fun HomeState.mapToScreen(): Screen =
     when (this) {
         HomeState.Connecting -> Connecting
-        HomeState.Failed -> Setup
+        HomeState.Failed -> SetupADB
         HomeState.Idle -> Start
-        HomeState.Ready -> Home
+        HomeState.TimeSelection -> TimeSelection
+        HomeState.Timer -> Timer
     }

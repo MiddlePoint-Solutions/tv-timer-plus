@@ -30,7 +30,7 @@ import io.middlepoint.tvsleep.ComposeLifecycleOwner
 import io.middlepoint.tvsleep.R
 import kotlin.math.roundToInt
 
-class OverlayService : Service() {
+class SleepService : Service() {
     private lateinit var wm: WindowManager
     private lateinit var overlayView: View
     private var composeView: ComposeView? = null

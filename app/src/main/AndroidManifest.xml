@@ -54,7 +54,7 @@
             android:foregroundServiceType="specialUse" />
 
         <service
-            android:name=".services.OverlayService"
+            android:name=".services.SleepService"
             android:exported="false" />
 
 

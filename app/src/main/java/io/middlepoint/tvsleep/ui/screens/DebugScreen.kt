@@ -10,11 +10,8 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -25,9 +22,10 @@ import androidx.tv.material3.Button
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Text
 import io.middlepoint.tvsleep.MainActivityViewModel
-import io.middlepoint.tvsleep.services.OverlayService
+import io.middlepoint.tvsleep.services.SleepService
 import io.middlepoint.tvsleep.services.WebServerService
 
+@Suppress("ktlint:compose:multiple-emitters-check")
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun DebugScreen(
@@ -36,10 +34,7 @@ fun DebugScreen(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
-    var status by remember { mutableStateOf("Waiting status") }
-    viewModel.outputText.observeAsState().value?.let {
-        status = it
-    }
+    val status by viewModel.outputText.collectAsState("Waiting Status")
 
     Column(
         modifier =
@@ -79,7 +74,7 @@ fun DebugScreen(
                     (
                         Intent(
                             context,
-                            OverlayService::class.java,
+                            SleepService::class.java,
                         )
                     ),
                 )

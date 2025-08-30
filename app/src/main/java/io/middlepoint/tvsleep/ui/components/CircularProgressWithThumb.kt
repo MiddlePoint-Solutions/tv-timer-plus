@@ -20,6 +20,7 @@ import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.progressSemantics
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -43,11 +44,14 @@ fun CircularProgressWithThumb(
     strokeWidth: Dp = 4.dp,
     thumbSize: Dp? = null,
 ) {
-    val stroke =
-        with(LocalDensity.current) {
-            Stroke(width = strokeWidth.toPx(), cap = StrokeCap.Butt)
-        }
-    val thumbSizeInPx = with(LocalDensity.current) { thumbSize?.toPx() } ?: stroke.width
+    val density = LocalDensity.current
+    val stroke = remember(density, strokeWidth) {
+        Stroke(width = with(density) { strokeWidth.toPx() }, cap = StrokeCap.Butt)
+    }
+    val thumbSizeInPx = remember(density, thumbSize, stroke.width) {
+        with(density) { thumbSize?.toPx() } ?: stroke.width
+    }
+
     Canvas(
         modifier
             .progressSemantics(progress)
@@ -57,14 +61,24 @@ fun CircularProgressWithThumb(
         val startAngle = 270f
         val sweep = progress * 360f
         val diameterOffset = stroke.width / 2
+        val arcDimen = size.width - 2 * diameterOffset // Pre-calculate arcDimen
+
         drawArcBackground(
             startAngle,
             (1 - progress) * 360,
             backgroundColor,
             stroke,
             diameterOffset,
+            arcDimen, // Pass arcDimen
         )
-        drawArcIndicator(startAngle, sweep, color, stroke, diameterOffset)
+        drawArcIndicator(
+            startAngle,
+            sweep,
+            color,
+            stroke,
+            diameterOffset,
+            arcDimen, // Pass arcDimen
+        )
         drawThumb(thumbSizeInPx, color, diameterOffset, sweep, startAngle)
     }
 }
@@ -90,8 +104,8 @@ fun DrawScope.drawArcBackground(
     color: Color,
     stroke: Stroke,
     diameterOffset: Float,
+    arcDimen: Float,
 ) {
-    val arcDimen = size.width - 2 * diameterOffset
     drawArc(
         color = color,
         startAngle = startAngle,
@@ -109,12 +123,12 @@ fun DrawScope.drawArcIndicator(
     color: Color,
     stroke: Stroke,
     diameterOffset: Float,
+    arcDimen: Float,
 ) {
-    val arcDimen = size.width - 2 * diameterOffset
     drawArc(
         color = color,
         startAngle = startAngle,
-        sweepAngle = -sweep,
+        sweepAngle = -sweep, // Note: sweep is positive for progress, so -sweep for indicator moving clockwise from top
         useCenter = false,
         topLeft = Offset(diameterOffset, diameterOffset),
         size = Size(arcDimen, arcDimen),

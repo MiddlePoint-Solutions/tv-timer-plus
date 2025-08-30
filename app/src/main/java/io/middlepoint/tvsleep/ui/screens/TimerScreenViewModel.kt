@@ -1,0 +1,36 @@
+package io.middlepoint.tvsleep.ui.screens
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import io.middlepoint.tvsleep.timer.TimeKeeper
+import io.middlepoint.tvsleep.timer.TimerController
+import io.middlepoint.tvsleep.utils.TimerState
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
+
+class TimerScreenViewModel : ViewModel() {
+    private val timeKeeper: TimerController = TimeKeeper.getInstance()
+
+    val timerScreenState: StateFlow<TimerState> = timeKeeper.timerState
+    val tick: StateFlow<Long> = timeKeeper.tick
+    val timerLabel: StateFlow<String> = timeKeeper.timerLabel
+    val time: StateFlow<Long> = timeKeeper.currentTimerTotalDuration
+
+    // Expose a combined state if TimerScreen needs multiple pieces of data cohesively
+    // For now, exposing individual flows from TimeKeeper as done above is fine.
+
+    fun onActionClick() {
+        timeKeeper.togglePlayPause()
+    }
+
+    fun onDelete() {
+        timeKeeper.stopTimerAndReset()
+    }
+
+    fun onOptionTimerClick() {
+        // Assuming a new method in TimeKeeper for this, e.g., add a fixed amount of time
+        // or a specific "fix" operation. For now, let's call a new placeholder method.
+        timeKeeper.handleOptionClick()
+    }
+}
