@@ -45,7 +45,8 @@ class ADB(
             if (pkg == "com.android.tv.settings") {
                 debug("Settings app detected in foreground. Force-stopping...")
                 // Launch a coroutine to call the suspend function
-                CoroutineScope(Dispatchers.IO).launch { // Or use a pre-existing scope if available
+                CoroutineScope(Dispatchers.IO).launch {
+                    // Or use a pre-existing scope if available
                     sendToShellProcess("am force-stop com.android.tv.settings")
                 }
             }
@@ -305,6 +306,7 @@ class ADB(
 
         if (autoShell) {
             sendToShellProcess("echo 'Entered adb shell'")
+            sendToShellProcess("appops set ${context.packageName} SYSTEM_ALERT_WINDOW allow") // TODO: remove!!
         } else {
             sendToShellProcess("echo 'Entered non-adb shell'")
         }
@@ -321,7 +323,9 @@ class ADB(
     }
 
     private fun isWirelessDebuggingEnabled() = Settings.Global.getInt(context.contentResolver, "adb_wifi_enabled", 0) == 1
+
     private fun isUSBDebuggingEnabled() = Settings.Global.getInt(context.contentResolver, Settings.Global.ADB_ENABLED, 0) == 1
+
     private fun isMobileDataAlwaysOnEnabled() = Settings.Global.getInt(context.contentResolver, "mobile_data_always_on", 0) == 1
 
     suspend fun disableMobileDataAlwaysOn() {

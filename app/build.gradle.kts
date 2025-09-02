@@ -72,6 +72,7 @@ dependencies {
     implementation(libs.kermit)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.preference.ktx)
+    implementation(libs.androidx.lifecycle.process)
 
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)

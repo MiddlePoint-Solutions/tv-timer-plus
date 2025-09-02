@@ -1,14 +1,10 @@
 package io.middlepoint.tvsleep.ui.screens
 
 // Imports from HomeScreen that are relevant to MainScreenBody, MainTimer, ActionButtons
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -17,9 +13,8 @@ import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Stop
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -27,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.tv.material3.Button
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
@@ -34,16 +30,14 @@ import androidx.tv.material3.IconButton
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import io.middlepoint.tvsleep.R
-import io.middlepoint.tvsleep.ui.components.CircularProgressWithThumb
+import io.middlepoint.tvsleep.ui.components.MainTimer
 import io.middlepoint.tvsleep.utils.TimerState
-import io.middlepoint.tvsleep.utils.calculateFontSize
-import androidx.lifecycle.viewmodel.compose.viewModel
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun TimerScreen(
     modifier: Modifier = Modifier,
-    viewModel: TimerScreenViewModel = viewModel()
+    viewModel: TimerScreenViewModel = viewModel(),
 ) {
     val time by viewModel.time.collectAsState()
     val tick by viewModel.tick.collectAsState()
@@ -101,82 +95,6 @@ fun TimerScreen(
                         width = Dimension.fillToConstraints
                     },
         )
-    }
-}
-
-@OptIn(ExperimentalTvMaterial3Api::class)
-@Composable
-private fun MainTimer(
-    animatedProgress: Float,
-    timerScreenState: TimerState,
-    formattedTime: String,
-    onOptionTimerClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Box(modifier = modifier, contentAlignment = Alignment.Center) {
-        AnimatedVisibility(
-            visible = timerScreenState != TimerState.Finished,
-            enter = fadeIn(),
-            exit = fadeOut(),
-        ) {
-            CircularProgressWithThumb(
-                progress = animatedProgress,
-                strokeWidth = 4.dp,
-                thumbSize = 6.dp,
-                modifier = Modifier.fillMaxSize(),
-            )
-        }
-
-        ConstraintLayout(
-            modifier = Modifier.fillMaxSize(),
-        ) {
-            val (timerText, optionTimerButton) = createRefs()
-
-            val color =
-                if (timerScreenState == TimerState.Finished) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.onSurface
-                }
-            Text(
-                text = formattedTime,
-                style =
-                    MaterialTheme.typography.headlineMedium.copy(
-                        fontSize = formattedTime.calculateFontSize(),
-                        fontWeight = FontWeight.W400,
-                        letterSpacing = 1.sp,
-                    ),
-                color = color,
-                modifier =
-                    Modifier.constrainAs(timerText) {
-                        linkTo(
-                            start = parent.start,
-                            top = parent.top,
-                            end = parent.end,
-                            bottom = parent.bottom,
-                        )
-                    },
-            )
-
-            Button(
-                onClick = onOptionTimerClick,
-                modifier =
-                    Modifier.constrainAs(optionTimerButton) {
-                        linkTo(start = parent.start, end = parent.end)
-                        bottom.linkTo(parent.bottom, margin = 20.dp)
-                    },
-            ) {
-                Text(
-                    text = "Fix", // Placeholder text, consider making this dynamic or a resource
-                    style =
-                        MaterialTheme.typography.bodyMedium.copy(
-                            letterSpacing = 0.sp,
-                            fontWeight = FontWeight.W400,
-                        ),
-                    color = MaterialTheme.colorScheme.onPrimary,
-                )
-            }
-        }
     }
 }
 
