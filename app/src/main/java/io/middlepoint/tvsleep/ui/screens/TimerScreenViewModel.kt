@@ -13,9 +13,8 @@ class TimerScreenViewModel : ViewModel() {
     private val timeKeeper: TimerController = TimeKeeper.getInstance()
 
     val timerScreenState: StateFlow<TimerState> = timeKeeper.timerState
-    val tick: StateFlow<Long> = timeKeeper.tick
     val timerLabel: StateFlow<String> = timeKeeper.timerLabel
-    val time: StateFlow<Long> = timeKeeper.currentTimerTotalDuration
+    val timerProgressOffset: StateFlow<Float> = timeKeeper.timerProgressOffset
 
     // Expose a combined state if TimerScreen needs multiple pieces of data cohesively
     // For now, exposing individual flows from TimeKeeper as done above is fine.

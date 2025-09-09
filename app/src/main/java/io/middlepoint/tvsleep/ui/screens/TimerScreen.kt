@@ -39,19 +39,16 @@ fun TimerScreen(
     modifier: Modifier = Modifier,
     viewModel: TimerScreenViewModel = viewModel(),
 ) {
-    val time by viewModel.time.collectAsState()
-    val tick by viewModel.tick.collectAsState()
     val timerLabel by viewModel.timerLabel.collectAsState()
     val timerScreenState by viewModel.timerScreenState.collectAsState()
+    val timerProgressOffset by viewModel.timerProgressOffset.collectAsState()
 
     ConstraintLayout(
         modifier = modifier.fillMaxSize(),
     ) {
         val (actionButtons, timer) = createRefs()
-        val progress = if (time > 0) (tick.toFloat() / time.toFloat()).coerceAtLeast(0f) else 0f
-        val progressOffset = (1 - progress)
         val animatedProgress by animateFloatAsState(
-            targetValue = progressOffset,
+            targetValue = timerProgressOffset,
             animationSpec =
                 SpringSpec(
                     dampingRatio = Spring.DampingRatioNoBouncy,

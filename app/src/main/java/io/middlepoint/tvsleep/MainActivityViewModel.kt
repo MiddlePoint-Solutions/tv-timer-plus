@@ -61,7 +61,8 @@ class MainActivityViewModel(
 
         viewModelScope.launch {
             combine(adb.state, timeKeeper.timerState) { adbState, timerControllerState ->
-                val isActive = timerControllerState !is TimerState.Stopped && timerControllerState !is TimerState.Finished
+                val isActive =
+                    timerControllerState !is TimerState.Stopped && timerControllerState !is TimerState.Finished
                 adbState.mapToHomeState(isTimerActive = isActive)
             }.collect { combinedHomeState ->
                 _homeState.value = combinedHomeState

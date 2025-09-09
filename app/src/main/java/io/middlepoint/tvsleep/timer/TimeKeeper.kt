@@ -7,7 +7,6 @@ import io.middlepoint.tvsleep.utils.ZERO_LONG
 import io.middlepoint.tvsleep.utils.toHhMmSs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -23,44 +22,59 @@ class TimeKeeper private constructor() :
     CoroutineScope {
         @OptIn(DelicateCoroutinesApi::class)
         override val coroutineContext: CoroutineContext
-            get() = GlobalScope.coroutineContext
+            get() = GlobalScope.coroutineContext + SupervisorJob()
 
         private val logger = Logger.withTag("TimeKeeper")
 
         private val _timerState = MutableStateFlow<TimerState>(TimerState.Stopped)
         override val timerState: StateFlow<TimerState> = _timerState
 
-        private val _tick = MutableStateFlow<Long>(0L)
+        private val _tick = MutableStateFlow(0L)
         override val tick: StateFlow<Long> = _tick
 
-        private val _timerLabel = MutableStateFlow<String>("")
+        private val _timerLabel = MutableStateFlow("")
         override val timerLabel: StateFlow<String> = _timerLabel
 
         private var timerJob: Job? = null
 
-        private val _currentTimerTotalDuration = MutableStateFlow<Long>(0L)
+        private val _currentTimerTotalDuration = MutableStateFlow(0L)
         override val currentTimerTotalDuration: StateFlow<Long> = _currentTimerTotalDuration
+
+        private val _timerProgressOffset = MutableStateFlow(1f)
+        override val timerProgressOffset: StateFlow<Float> = _timerProgressOffset
+
+        private fun setTimerState(newState: TimerState) {
+            _timerState.value = newState
+        }
+
+        private fun updateProgressOffset() {
+            val total = _currentTimerTotalDuration.value
+            val current = _tick.value
+            _timerProgressOffset.value =
+                if (total > 0L) (1f - (current.toFloat() / total.toFloat())).coerceIn(0f, 1f) else 1f
+        }
 
         override fun selectTime(durationMillis: Long) {
             _currentTimerTotalDuration.value = durationMillis
             _timerLabel.value = durationMillis.toHhMmSs()
-            _tick.value = durationMillis // Initialize tick to full duration
+            _tick.value = durationMillis // Initialize tick to full duration (remaining time)
+            updateProgressOffset()
+            setTimerState(TimerState.Started)
             startTimer(durationMillis)
-            _timerState.value = TimerState.Started
         }
 
         override fun togglePlayPause() {
             when (_timerState.value) {
                 is TimerState.Started -> {
                     timerJob?.cancel()
-                    _timerState.value = TimerState.Paused
+                    setTimerState(TimerState.Paused)
                 }
 
                 is TimerState.Paused -> {
                     val currentTick = _tick.value
                     if (currentTick > 0) {
+                        setTimerState(TimerState.Started)
                         startTimer(currentTick)
-                        _timerState.value = TimerState.Started
                     }
                 }
 
@@ -72,30 +86,44 @@ class TimeKeeper private constructor() :
 
         override fun stopTimerAndReset() {
             timerJob?.cancel()
-            _timerState.value = TimerState.Stopped
+            setTimerState(TimerState.Stopped)
             _tick.value = 0L
             _timerLabel.value = ""
             _currentTimerTotalDuration.value = 0L
+            updateProgressOffset()
         }
 
         override fun addTime(durationMillis: Long) {
+            val originalTotal = _currentTimerTotalDuration.value
+            val currentTick = _tick.value
+
             when (val currentState = _timerState.value) {
                 is TimerState.Started -> {
-                    val newDuration = (_tick.value) + durationMillis
-                    _currentTimerTotalDuration.value = (_currentTimerTotalDuration.value) + durationMillis
-                    timerJob?.cancel()
-                    startTimer(newDuration)
+                    val newTick = currentTick + durationMillis
+                    _currentTimerTotalDuration.value = originalTotal + durationMillis
+                    _tick.value = newTick
+                    updateProgressOffset()
+                    timerJob?.cancel() // Cancel before starting a new one
+                    // State is already Started, just restart timer with new duration
+                    startTimer(newTick)
                 }
 
                 is TimerState.Paused -> {
-                    val newTick = (_tick.value) + durationMillis
+                    val newTick = currentTick + durationMillis
                     _tick.value = newTick
                     _timerLabel.value = newTick.toHhMmSs()
-                    _currentTimerTotalDuration.value = (_currentTimerTotalDuration.value) + durationMillis
+                    _currentTimerTotalDuration.value = originalTotal + durationMillis
+                    updateProgressOffset()
+                    // State remains Paused, user needs to resume
                 }
 
                 is TimerState.Finished -> {
-                    stopTimerAndReset()
+                    _currentTimerTotalDuration.value = durationMillis
+                    _tick.value = durationMillis
+                    _timerLabel.value = durationMillis.toHhMmSs()
+                    updateProgressOffset()
+                    setTimerState(TimerState.Started)
+                    startTimer(durationMillis)
                 }
 
                 else -> {
@@ -105,17 +133,16 @@ class TimeKeeper private constructor() :
         }
 
         override fun handleOptionClick() {
-            // Placeholder: For example, add 1 minute (60,000 ms)
-            // You can define a more specific behavior here.
-            logger.i { "handleOptionClick called. Placeholder: Adding 1 minute." }
+            logger.i { "handleOptionClick called. Adding 60 seconds." }
             addTime(60000L)
         }
 
-        private fun startTimer(duration: Long) {
+        private fun startTimer(duration: Long) { // duration is remaining time
             timerJob?.cancel()
             val period = 250L
             var interval = duration
-            _tick.value = interval
+            _tick.value = interval // Set initial tick value
+            updateProgressOffset() // Update progress based on initial tick
 
             timerJob =
                 launch {
@@ -123,18 +150,19 @@ class TimeKeeper private constructor() :
                         delay(period)
                         interval -= period
                         _tick.value = interval
+                        updateProgressOffset() // Update progress as tick changes
 
                         if (interval % ONE_THOUSAND_INT == ZERO_LONG || interval == duration) {
                             _timerLabel.value = interval.toHhMmSs()
                         }
-
-                        if (_timerState.value !is TimerState.Started && interval > ZERO_LONG) {
-                            _timerState.value = TimerState.Started // Ensure state is started if timer is running
-                        }
                     }
                     if (interval <= ZERO_LONG) {
-                        if (_timerState.value != TimerState.Finished) {
-                            _timerState.value = TimerState.Finished
+                        _tick.value = 0L // Ensure tick is 0 when finished
+                        updateProgressOffset()
+                        // Only set to Finished if not already stopped or in another terminal state.
+                        if (_timerState.value is TimerState.Started || _timerState.value is TimerState.Paused) {
+                            delay(1000)
+                            setTimerState(TimerState.Finished)
                         }
                     }
                 }
@@ -142,7 +170,6 @@ class TimeKeeper private constructor() :
 
         fun onDestroy() {
             timerJob?.cancel()
-            // externalScope should be cancelled by its owner (e.g., ViewModel's viewModelScope)
         }
 
         companion object {

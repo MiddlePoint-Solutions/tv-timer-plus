@@ -15,6 +15,8 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -34,7 +36,14 @@ import io.middlepoint.tvsleep.ComposeLifecycleOwner
 import io.middlepoint.tvsleep.R
 import io.middlepoint.tvsleep.timer.TimeKeeper
 import io.middlepoint.tvsleep.ui.components.MainTimer
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 
 class SleepService : Service() {
     private val logger = Logger.withTag("SleepService")
@@ -45,12 +54,15 @@ class SleepService : Service() {
     private var composeOwner: ComposeLifecycleOwner? = null
     private lateinit var params: WindowManager.LayoutParams
 
-    // 1. Force true for testing
     private val overlayVisibleStateFlow = MutableStateFlow(false)
+
+    private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    private var autoHideJob: Job? = null
 
     companion object {
         const val ACTION_SHOW_OVERLAY = "io.middlepoint.tvsleep.services.SHOW_OVERLAY"
         const val ACTION_HIDE_OVERLAY = "io.middlepoint.tvsleep.services.HIDE_OVERLAY"
+        private const val AUTO_HIDE_DELAY_MS = 10_000L
     }
 
     override fun onCreate() {
@@ -104,20 +116,16 @@ class SleepService : Service() {
 
                     AnimatedVisibility(
                         visible = overlayVisible,
-                        enter = fadeIn(),
-                        exit = fadeOut(),
+                        enter = fadeIn(tween(700)),
+                        exit = fadeOut(tween(1000)),
                     ) {
                         MaterialTheme {
-                            val time by timeKeeper.currentTimerTotalDuration.collectAsState()
-                            val tick by timeKeeper.tick.collectAsState()
                             val timerLabel by timeKeeper.timerLabel.collectAsState()
                             val timerScreenState by timeKeeper.timerState.collectAsState()
+                            val timerProgressOffset by timeKeeper.timerProgressOffset.collectAsState()
 
-                            val progress =
-                                if (time > 0) (tick.toFloat() / time.toFloat()).coerceAtLeast(0f) else 0f
-                            val progressOffset = (1 - progress)
                             val animatedProgress by animateFloatAsState(
-                                targetValue = progressOffset,
+                                targetValue = timerProgressOffset,
                                 animationSpec =
                                     SpringSpec(
                                         dampingRatio = Spring.DampingRatioNoBouncy,
@@ -157,16 +165,22 @@ class SleepService : Service() {
         startId: Int,
     ): Int {
         logger.d("onStartCommand action: ${intent?.action}")
-        // Note: For testing, overlayVisibleStateFlow is hardcoded to true initially.
-        // The SHOW/HIDE actions will change the state, but it starts as true.
         when (intent?.action) {
             ACTION_SHOW_OVERLAY -> {
                 logger.d("ACTION_SHOW_OVERLAY received")
+                autoHideJob?.cancel()
                 overlayVisibleStateFlow.value = true
+                autoHideJob =
+                    serviceScope.launch {
+                        delay(AUTO_HIDE_DELAY_MS)
+                        overlayVisibleStateFlow.value = false
+                        logger.d("Overlay hidden after delay")
+                    }
             }
 
             ACTION_HIDE_OVERLAY -> {
                 logger.d("ACTION_HIDE_OVERLAY received")
+                autoHideJob?.cancel()
                 overlayVisibleStateFlow.value = false
             }
         }
@@ -175,6 +189,8 @@ class SleepService : Service() {
 
     override fun onDestroy() {
         logger.d("onDestroy started")
+        autoHideJob?.cancel()
+        serviceScope.cancel() // Cancel the scope and all its children
         composeOwner?.onPause()
         composeOwner?.onStop()
         composeOwner?.onDestroy()

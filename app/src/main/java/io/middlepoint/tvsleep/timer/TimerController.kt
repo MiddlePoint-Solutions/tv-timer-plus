@@ -8,6 +8,7 @@ interface TimerController {
     val tick: StateFlow<Long>
     val timerLabel: StateFlow<String>
     val currentTimerTotalDuration: StateFlow<Long>
+    val timerProgressOffset: StateFlow<Float> // Added for progress
 
     fun selectTime(durationMillis: Long)
     fun togglePlayPause()

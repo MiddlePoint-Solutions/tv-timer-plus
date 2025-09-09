@@ -378,6 +378,10 @@ class ADB(
         }
     }
 
+    suspend fun goToSleep() {
+        sendToShellProcess("input keyevent KEYCODE_POWER")
+    }
+
     suspend fun waitForDeathAndReset() =
         withContext(Dispatchers.IO) {
             while (isActive) {
