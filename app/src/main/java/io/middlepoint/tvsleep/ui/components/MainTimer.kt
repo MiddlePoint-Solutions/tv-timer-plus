@@ -3,8 +3,10 @@ package io.middlepoint.tvsleep.ui.components
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,10 +27,12 @@ fun MainTimer(
     animatedProgress: Float,
     timerScreenState: TimerState,
     formattedTime: String,
-    onOptionTimerClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Box(modifier = modifier, contentAlignment = Alignment.Companion.Center) {
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center,
+    ) {
         AnimatedVisibility(
             visible = timerScreenState != TimerState.Finished,
             enter = fadeIn(),
@@ -38,59 +42,54 @@ fun MainTimer(
                 progress = animatedProgress,
                 strokeWidth = 4.dp,
                 thumbSize = 6.dp,
-                modifier = Modifier.Companion.fillMaxSize(),
+                modifier = Modifier.fillMaxSize(),
             )
         }
 
         ConstraintLayout(
-            modifier = Modifier.Companion.fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
         ) {
             val (timerText, optionTimerButton) = createRefs()
 
-            val color =
-                if (timerScreenState == TimerState.Finished) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.onSurface
-                }
             Text(
                 text = formattedTime,
                 style =
-                    MaterialTheme.typography.headlineMedium.copy(
+                    MaterialTheme.typography.displaySmall.copy(
                         fontSize = formattedTime.calculateFontSize(),
-                        fontWeight = FontWeight.Companion.W400,
+                        fontWeight = FontWeight.Companion.W300,
                         letterSpacing = 1.sp,
                     ),
-                color = color,
+                color = MaterialTheme.colorScheme.onPrimary,
                 modifier =
-                    Modifier.Companion.constrainAs(timerText) {
-                        linkTo(
-                            start = parent.start,
-                            top = parent.top,
-                            end = parent.end,
-                            bottom = parent.bottom,
-                        )
-                    },
+                    Modifier
+                        .constrainAs(timerText) {
+                            linkTo(
+                                start = parent.start,
+                                top = parent.top,
+                                end = parent.end,
+                                bottom = parent.bottom,
+                            )
+                        },
             )
 
-            Button(
-                onClick = onOptionTimerClick,
-                modifier =
-                    Modifier.Companion.constrainAs(optionTimerButton) {
-                        linkTo(start = parent.start, end = parent.end)
-                        bottom.linkTo(parent.bottom, margin = 20.dp)
-                    },
-            ) {
-                Text(
-                    text = "Fix", // Placeholder text, consider making this dynamic or a resource
-                    style =
-                        MaterialTheme.typography.bodyMedium.copy(
-                            letterSpacing = 0.sp,
-                            fontWeight = FontWeight.Companion.W400,
-                        ),
-                    color = MaterialTheme.colorScheme.onPrimary,
-                )
-            }
+//            Button( // TODO: Replace with label of the timer?
+//                onClick = {},
+//                modifier =
+//                    Modifier.constrainAs(optionTimerButton) {
+//                        linkTo(start = parent.start, end = parent.end)
+//                        bottom.linkTo(parent.bottom, margin = 20.dp)
+//                    },
+//            ) {
+//                Text(
+//                    text = "Fix", // Placeholder text, consider making this dynamic or a resource
+//                    style =
+//                        MaterialTheme.typography.bodyMedium.copy(
+//                            letterSpacing = 0.sp,
+//                            fontWeight = FontWeight.Companion.W400,
+//                        ),
+//                    color = MaterialTheme.colorScheme.onPrimary,
+//                )
+//            }
         }
     }
 }

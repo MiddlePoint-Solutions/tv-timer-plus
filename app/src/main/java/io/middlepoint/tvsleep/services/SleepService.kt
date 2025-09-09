@@ -11,17 +11,20 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.FrameLayout
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.layout.Box
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.unit.dp
@@ -32,7 +35,6 @@ import io.middlepoint.tvsleep.R
 import io.middlepoint.tvsleep.timer.TimeKeeper
 import io.middlepoint.tvsleep.ui.components.MainTimer
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlin.math.roundToInt
 
 class SleepService : Service() {
     private val logger = Logger.withTag("SleepService")
@@ -44,7 +46,7 @@ class SleepService : Service() {
     private lateinit var params: WindowManager.LayoutParams
 
     // 1. Force true for testing
-    private val overlayVisibleStateFlow = MutableStateFlow(true)
+    private val overlayVisibleStateFlow = MutableStateFlow(false)
 
     companion object {
         const val ACTION_SHOW_OVERLAY = "io.middlepoint.tvsleep.services.SHOW_OVERLAY"
@@ -70,16 +72,13 @@ class SleepService : Service() {
             LayoutInflater
                 .from(this)
                 .inflate(R.layout.view_overlay, FrameLayout(this), false)
-        // 3. Set a background color for testing visibility of overlayView itself
-        overlayView.setBackgroundColor(android.graphics.Color.RED)
-
 
         val type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
         params =
             WindowManager
                 .LayoutParams(
-                    300, // 2. Fixed width for testing
-                    300, // 2. Fixed height for testing
+                    WindowManager.LayoutParams.WRAP_CONTENT,
+                    WindowManager.LayoutParams.WRAP_CONTENT,
                     type,
                     WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                         WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
@@ -87,8 +86,8 @@ class SleepService : Service() {
                     PixelFormat.TRANSLUCENT,
                 ).apply {
                     gravity = Gravity.TOP or Gravity.START
-                    x = 200 // initial position
-                    y = 200
+                    x = 40
+                    y = 40
                 }
 
         wm.addView(overlayView, params)
@@ -103,18 +102,19 @@ class SleepService : Service() {
                 setContent {
                     val overlayVisible by overlayVisibleStateFlow.collectAsState()
 
-                    LaunchedEffect(overlayVisible) {
-                        logger.d("Compose: overlayVisible state is: $overlayVisible")
-                    }
-
-                    if (overlayVisible) {
+                    AnimatedVisibility(
+                        visible = overlayVisible,
+                        enter = fadeIn(),
+                        exit = fadeOut(),
+                    ) {
                         MaterialTheme {
                             val time by timeKeeper.currentTimerTotalDuration.collectAsState()
                             val tick by timeKeeper.tick.collectAsState()
                             val timerLabel by timeKeeper.timerLabel.collectAsState()
                             val timerScreenState by timeKeeper.timerState.collectAsState()
 
-                            val progress = if (time > 0) (tick.toFloat() / time.toFloat()).coerceAtLeast(0f) else 0f
+                            val progress =
+                                if (time > 0) (tick.toFloat() / time.toFloat()).coerceAtLeast(0f) else 0f
                             val progressOffset = (1 - progress)
                             val animatedProgress by animateFloatAsState(
                                 targetValue = progressOffset,
@@ -134,21 +134,11 @@ class SleepService : Service() {
                                 modifier =
                                     Modifier
                                         .size(200.dp) // MainTimer has a defined size
-                                        .pointerInput(Unit) {
-                                            detectDragGestures { change, drag ->
-                                                change.consume()
-                                                params.x += drag.x.roundToInt()
-                                                params.y += drag.y.roundToInt()
-                                                runCatching { wm.updateViewLayout(overlayView, params) }
-                                                    .onFailure { logger.e(it) { "Error updating view layout" } }
-                                            }
-                                        },
-                                onOptionTimerClick = { /* Decide action */ },
+                                        .background(MaterialTheme.colorScheme.primary, CircleShape)
+                                        .clipToBounds()
+                                        .padding(8.dp),
                             )
                         }
-                    } else {
-                        Box {} // Empty content when not visible
-                        logger.d("Compose: Rendering empty Box as overlayVisible is false")
                     }
                 }
             }
@@ -174,6 +164,7 @@ class SleepService : Service() {
                 logger.d("ACTION_SHOW_OVERLAY received")
                 overlayVisibleStateFlow.value = true
             }
+
             ACTION_HIDE_OVERLAY -> {
                 logger.d("ACTION_HIDE_OVERLAY received")
                 overlayVisibleStateFlow.value = false

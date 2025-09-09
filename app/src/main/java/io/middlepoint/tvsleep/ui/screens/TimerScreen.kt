@@ -77,7 +77,6 @@ fun TimerScreen(
                             bottomMargin = 16.dp,
                         )
                     },
-            onOptionTimerClick = { viewModel.onOptionTimerClick() },
         )
 
         ActionButtons(
