@@ -15,7 +15,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -36,6 +35,8 @@ import io.middlepoint.tvsleep.ComposeLifecycleOwner
 import io.middlepoint.tvsleep.R
 import io.middlepoint.tvsleep.timer.TimeKeeper
 import io.middlepoint.tvsleep.ui.components.MainTimer
+import io.middlepoint.tvsleep.utils.ADB
+import io.middlepoint.tvsleep.utils.TimerState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -43,11 +44,13 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class SleepService : Service() {
     private val logger = Logger.withTag("SleepService")
     private lateinit var timeKeeper: TimeKeeper
+    private lateinit var adb: ADB
     private lateinit var wm: WindowManager
     private lateinit var overlayView: View
     private var composeView: ComposeView? = null
@@ -78,6 +81,9 @@ class SleepService : Service() {
         logger.d("onCreate - Settings.canDrawOverlays(this) is true")
 
         timeKeeper = TimeKeeper.getInstance()
+        adb = ADB.getInstance(this)
+
+        observeTimerState()
 
         wm = getSystemService(WINDOW_SERVICE) as WindowManager
         overlayView =
@@ -121,7 +127,7 @@ class SleepService : Service() {
                     ) {
                         MaterialTheme {
                             val timerLabel by timeKeeper.timerLabel.collectAsState()
-                            val timerScreenState by timeKeeper.timerState.collectAsState()
+                            val timerScreenState by timeKeeper.timerState.collectAsState() // Keep this for MainTimer
                             val timerProgressOffset by timeKeeper.timerProgressOffset.collectAsState()
 
                             val animatedProgress by animateFloatAsState(
@@ -159,6 +165,21 @@ class SleepService : Service() {
         logger.d("SleepService onCreate finished")
     }
 
+    private fun observeTimerState() {
+        serviceScope.launch {
+            timeKeeper.timerState.collectLatest { state ->
+                if (state is TimerState.Finished) {
+                    logger.d("Timer finished. Putting device to sleep.")
+                    try {
+                        adb.goToSleep()
+                    } catch (e: Exception) {
+                        logger.e(e) { "Error putting device to sleep" }
+                    }
+                }
+            }
+        }
+    }
+
     override fun onStartCommand(
         intent: Intent?,
         flags: Int,
@@ -170,12 +191,7 @@ class SleepService : Service() {
                 logger.d("ACTION_SHOW_OVERLAY received")
                 autoHideJob?.cancel()
                 overlayVisibleStateFlow.value = true
-                autoHideJob =
-                    serviceScope.launch {
-                        delay(AUTO_HIDE_DELAY_MS)
-                        overlayVisibleStateFlow.value = false
-                        logger.d("Overlay hidden after delay")
-                    }
+                startAutoHideJob()
             }
 
             ACTION_HIDE_OVERLAY -> {
@@ -185,6 +201,15 @@ class SleepService : Service() {
             }
         }
         return START_STICKY
+    }
+
+    private fun startAutoHideJob() {
+        autoHideJob =
+            serviceScope.launch {
+                delay(AUTO_HIDE_DELAY_MS)
+                overlayVisibleStateFlow.value = false
+                logger.d("Overlay hidden after delay")
+            }
     }
 
     override fun onDestroy() {
