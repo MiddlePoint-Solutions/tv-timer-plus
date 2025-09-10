@@ -21,7 +21,9 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import androidx.tv.material3.ExperimentalTvMaterial3Api
+import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Surface
+import androidx.tv.material3.SurfaceColors
 import androidx.tv.material3.SurfaceDefaults
 import co.touchlab.kermit.Logger
 import io.middlepoint.tvsleep.ui.screens.Connecting
@@ -59,7 +61,10 @@ class MainActivity : ComponentActivity() {
                         Modifier
                             .fillMaxSize()
                             .safeContentPadding(),
-                    colors = SurfaceDefaults.colors(containerColor = Purple40),
+                    colors =
+                        SurfaceDefaults.colors(
+                            containerColor = MaterialTheme.colorScheme.background,
+                        ),
                 ) {
                     NavHost(
                         navController = navController,
@@ -77,7 +82,7 @@ class MainActivity : ComponentActivity() {
                             TimerScreen()
                         }
                         composable<SetupADB> {
-                            SetupScreen(viewModel)
+                            SetupScreen()
                         }
                         composable<Connecting> {
                             ConnectingScreen()
@@ -86,8 +91,6 @@ class MainActivity : ComponentActivity() {
                             DebugScreen(navController, viewModel)
                         }
                     }
-
-                    val backStackEntry by navController.currentBackStackEntryAsState()
 
                     BackHandler {
                         finish()

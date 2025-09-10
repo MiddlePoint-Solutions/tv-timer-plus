@@ -40,6 +40,7 @@
         android:theme="@style/Theme.App.Starting">
         <activity
             android:name=".MainActivity"
+            android:theme="@style/Theme.TVsleep"
             android:launchMode="singleTask"
             android:exported="true">
             <intent-filter>

@@ -1,34 +1,24 @@
 package io.middlepoint.tvsleep.ui.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
-import androidx.tv.material3.ExperimentalTvMaterial3Api
+import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.Color
 import androidx.tv.material3.MaterialTheme
-import androidx.tv.material3.darkColorScheme
 import androidx.tv.material3.lightColorScheme
 
-@OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-fun TVsleepTheme(
-  isInDarkTheme: Boolean = isSystemInDarkTheme(),
-  content: @Composable () -> Unit,
-) {
-  val colorScheme = if (isInDarkTheme) {
-    darkColorScheme(
-      primary = Purple80,
-      secondary = PurpleGrey80,
-      tertiary = Pink80
+fun TVsleepTheme(content: @Composable () -> Unit) {
+    val colorScheme =
+        remember {
+            lightColorScheme(
+                onPrimary = Color.White,
+                background = Purple40,
+                onBackground = Color.White,
+            )
+        }
+    MaterialTheme(
+        colorScheme = colorScheme,
+        typography = Typography,
+        content = content,
     )
-  } else {
-    lightColorScheme(
-      primary = Purple40,
-      secondary = PurpleGrey40,
-      tertiary = Pink40
-    )
-  }
-  MaterialTheme(
-    colorScheme = colorScheme,
-    typography = Typography,
-    content = content
-  )
 }
