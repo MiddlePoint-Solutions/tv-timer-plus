@@ -5,10 +5,12 @@ import androidx.compose.animation.core.SpringSpec
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
@@ -34,6 +36,8 @@ import androidx.tv.material3.Card
 import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
+import androidx.tv.material3.MaterialTheme
+import androidx.tv.material3.Text
 import io.middlepoint.tvsleep.R
 import io.middlepoint.tvsleep.ui.components.MainTimer
 import io.middlepoint.tvsleep.utils.TimerState
@@ -44,23 +48,41 @@ fun TimerScreen(
     modifier: Modifier = Modifier,
     viewModel: TimerScreenViewModel = viewModel(),
 ) {
-    val timerLabel by viewModel.timerLabel.collectAsState()
+    val timerLabel by viewModel.timerLabel.collectAsState() // HH:MM:SS
+    val selectedTimeOptionLabel by viewModel.selectedTimeOptionLabel.collectAsState() // Custom Label
     val timerScreenState by viewModel.timerScreenState.collectAsState()
     val timerProgressOffset by viewModel.timerProgressOffset.collectAsState()
 
     ConstraintLayout(
         modifier = modifier.fillMaxSize(),
     ) {
-        val (actionButtons, timer) = createRefs()
+        val (label, timerContent, actionButtons) = createRefs()
         val animatedProgress by animateFloatAsState(
             targetValue = timerProgressOffset,
             animationSpec =
                 SpringSpec(
                     dampingRatio = Spring.DampingRatioNoBouncy,
-                    stiffness = Spring.StiffnessVeryLow,
+                    stiffness = Spring.StiffnessMedium, // Changed from StiffnessVeryLow
                     visibilityThreshold = 1 / 1000f,
                 ),
             label = "TimerProgressAnimation",
+        )
+
+        Text(
+            text = selectedTimeOptionLabel,
+            style = MaterialTheme.typography.headlineMedium,
+            modifier =
+                Modifier.constrainAs(label) {
+                    linkTo(
+                        start = parent.start,
+                        top = parent.top,
+                        end = parent.end,
+                        bottom = timerContent.top,
+                        bottomMargin = 16.dp,
+                        topMargin = 16.dp,
+                        verticalBias = 0.67f, // Center vertically in the available space
+                    )
+                },
         )
 
         MainTimer(
@@ -68,17 +90,17 @@ fun TimerScreen(
             formattedTime = timerLabel,
             timerScreenState = timerScreenState,
             modifier =
-                Modifier
-                    .size(247.dp)
-                    .constrainAs(timer) {
-                        linkTo(
-                            start = parent.start,
-                            top = parent.top,
-                            end = parent.end,
-                            bottom = parent.bottom,
-                            bottomMargin = 16.dp,
-                        )
-                    },
+                Modifier.size(247.dp).constrainAs(timerContent) {
+                    linkTo(
+                        start = parent.start,
+                        top = parent.top,
+                        end = parent.end,
+                        bottom = parent.bottom, // Changed from actionButtons.top to parent.bottom
+                        bottomMargin = 16.dp,
+                        topMargin = 16.dp,
+                        verticalBias = 0.5f, // Center vertically in the available space
+                    )
+                },
         )
 
         ActionButtons(
@@ -88,7 +110,7 @@ fun TimerScreen(
             modifier =
                 Modifier
                     .constrainAs(actionButtons) {
-                        top.linkTo(timer.bottom, margin = 24.dp) // Adjusted margin
+                        bottom.linkTo(parent.bottom, margin = 32.dp)
                         linkTo(
                             start = parent.start,
                             end = parent.end,
@@ -109,14 +131,12 @@ private fun ActionButtons(
 ) {
     val focusRequester = remember { FocusRequester() }
 
-    LaunchedEffect(timerScreenState) {
-        if (timerScreenState is TimerState.Running || timerScreenState == TimerState.Started) {
-            focusRequester.requestFocus()
-        }
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
     }
 
     Row(
-        modifier = modifier.fillMaxWidth(), // Apply the modifier passed from the parent
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {

@@ -39,18 +39,20 @@ import kotlin.math.sin
 fun CircularProgressWithThumb(
     progress: Float,
     modifier: Modifier = Modifier,
-    color: Color = MaterialTheme.colorScheme.borderVariant,
+    color: Color = MaterialTheme.colorScheme.inversePrimary,
     backgroundColor: Color = Color.White,
     strokeWidth: Dp = 4.dp,
     thumbSize: Dp? = null,
 ) {
     val density = LocalDensity.current
-    val stroke = remember(density, strokeWidth) {
-        Stroke(width = with(density) { strokeWidth.toPx() }, cap = StrokeCap.Butt)
-    }
-    val thumbSizeInPx = remember(density, thumbSize, stroke.width) {
-        with(density) { thumbSize?.toPx() } ?: stroke.width
-    }
+    val stroke =
+        remember(density, strokeWidth) {
+            Stroke(width = with(density) { strokeWidth.toPx() }, cap = StrokeCap.Butt)
+        }
+    val thumbSizeInPx =
+        remember(density, thumbSize, stroke.width) {
+            with(density) { thumbSize?.toPx() } ?: stroke.width
+        }
 
     Canvas(
         modifier

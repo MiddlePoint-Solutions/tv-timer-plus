@@ -1,24 +1,25 @@
 [versions]
-agp = "8.11.1"
-kotlin = "2.2.10"
+agp = "8.13.0"
+kotlin = "2.2.20"
 coreKtx = "1.17.0"
 appcompat = "1.7.1"
-composeBom = "2025.08.00"
+composeBom = "2025.09.00"
 tvFoundation = "1.0.0-alpha12"
 tvMaterial = "1.0.1"
 materialIcons = "1.7.8"
 androidx-lifecycle = "2.9.3"
-activityCompose = "1.10.1"
-navigationCompose = "2.9.3"
-ktor = "3.2.3"
+activityCompose = "1.11.0"
+navigationCompose = "2.9.4"
+ktor = "3.3.0"
 dadb = "1.2.10"
-kermit = "2.0.6"
-ktlint = "13.0.0"
+kermit = "2.0.8"
+ktlint = "13.1.0"
 constraintlayout = "1.1.1"
 preferenceKtx = "1.2.1"
-splash-screen ="1.0.0"
+splash-screen ="1.0.1"
 lifecycleProcess = "2.8.3"
 lifecycleProcessVersion = "2.9.3"
+smoothMotion= "1.0.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -42,6 +43,7 @@ androidx-splash = { module = "androidx.core:core-splashscreen", version.ref = "s
 dadb = { group = "dev.mobile", name = "dadb", version.ref = "dadb" }
 kermit = { group = "co.touchlab", name = "kermit", version.ref = "kermit" }
 androidx-preference-ktx = { group = "androidx.preference", name = "preference-ktx", version.ref = "preferenceKtx" }
+smoothmotion = { group = "com.github.abdullahalhakimi", name = "SmoothMotion", version.ref = "smoothMotion" }
 
 # ktor
 ktor-server-core = { group = "io.ktor", name = "ktor-server-core-jvm", version.ref = "ktor" }

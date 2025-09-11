@@ -1,6 +1,7 @@
 package io.middlepoint.tvsleep.timer
 
 import co.touchlab.kermit.Logger
+import io.middlepoint.tvsleep.ui.screens.TimeOptionItem
 import io.middlepoint.tvsleep.utils.ONE_THOUSAND_INT
 import io.middlepoint.tvsleep.utils.TimerState
 import io.middlepoint.tvsleep.utils.ZERO_LONG
@@ -32,8 +33,11 @@ class TimeKeeper private constructor() :
         private val _tick = MutableStateFlow(0L)
         override val tick: StateFlow<Long> = _tick
 
-        private val _timerLabel = MutableStateFlow("")
+        private val _timerLabel = MutableStateFlow("") // This is for HH:MM:SS
         override val timerLabel: StateFlow<String> = _timerLabel
+
+        private val _selectedTimeOptionLabel = MutableStateFlow("")
+        val selectedTimeOptionLabel: StateFlow<String> = _selectedTimeOptionLabel
 
         private var timerJob: Job? = null
 
@@ -54,13 +58,14 @@ class TimeKeeper private constructor() :
                 if (total > 0L) (1f - (current.toFloat() / total.toFloat())).coerceIn(0f, 1f) else 1f
         }
 
-        override fun selectTime(durationMillis: Long) {
-            _currentTimerTotalDuration.value = durationMillis
-            _timerLabel.value = durationMillis.toHhMmSs()
-            _tick.value = durationMillis // Initialize tick to full duration (remaining time)
+        override fun selectTime(timeOptionItem: TimeOptionItem) {
+            _currentTimerTotalDuration.value = timeOptionItem.timeInMillis
+            _selectedTimeOptionLabel.value = timeOptionItem.label // Store the custom label
+            _timerLabel.value = timeOptionItem.timeInMillis.toHhMmSs() // Keep HH:MM:SS label
+            _tick.value = timeOptionItem.timeInMillis // Initialize tick to full duration (remaining time)
             updateProgressOffset()
             setTimerState(TimerState.Started)
-            startTimer(durationMillis)
+            startTimer(timeOptionItem.timeInMillis)
         }
 
         override fun togglePlayPause() {
@@ -89,6 +94,7 @@ class TimeKeeper private constructor() :
             setTimerState(TimerState.Stopped)
             _tick.value = 0L
             _timerLabel.value = ""
+            _selectedTimeOptionLabel.value = ""
             _currentTimerTotalDuration.value = 0L
             updateProgressOffset()
         }
@@ -96,6 +102,7 @@ class TimeKeeper private constructor() :
         override fun addTime(durationMillis: Long) {
             val originalTotal = _currentTimerTotalDuration.value
             val currentTick = _tick.value
+            // Adding time does not change the original selectedTimeOptionLabel
 
             when (val currentState = _timerState.value) {
                 is TimerState.Started -> {
@@ -104,7 +111,6 @@ class TimeKeeper private constructor() :
                     _tick.value = newTick
                     updateProgressOffset()
                     timerJob?.cancel() // Cancel before starting a new one
-                    // State is already Started, just restart timer with new duration
                     startTimer(newTick)
                 }
 
@@ -114,13 +120,13 @@ class TimeKeeper private constructor() :
                     _timerLabel.value = newTick.toHhMmSs()
                     _currentTimerTotalDuration.value = originalTotal + durationMillis
                     updateProgressOffset()
-                    // State remains Paused, user needs to resume
                 }
 
-                is TimerState.Finished -> {
+                is TimerState.Finished -> { // If finished and time is added, it's like starting a new timer but without a TimeOptionItem
                     _currentTimerTotalDuration.value = durationMillis
                     _tick.value = durationMillis
                     _timerLabel.value = durationMillis.toHhMmSs()
+                    _selectedTimeOptionLabel.value = "Added time" // Or some generic label
                     updateProgressOffset()
                     setTimerState(TimerState.Started)
                     startTimer(durationMillis)
@@ -141,8 +147,8 @@ class TimeKeeper private constructor() :
             timerJob?.cancel()
             val period = 250L
             var interval = duration
-            _tick.value = interval // Set initial tick value
-            updateProgressOffset() // Update progress based on initial tick
+            _tick.value = interval
+            updateProgressOffset()
 
             timerJob =
                 launch {
@@ -150,16 +156,15 @@ class TimeKeeper private constructor() :
                         delay(period)
                         interval -= period
                         _tick.value = interval
-                        updateProgressOffset() // Update progress as tick changes
+                        updateProgressOffset()
 
                         if (interval % ONE_THOUSAND_INT == ZERO_LONG || interval == duration) {
                             _timerLabel.value = interval.toHhMmSs()
                         }
                     }
                     if (interval <= ZERO_LONG) {
-                        _tick.value = 0L // Ensure tick is 0 when finished
+                        _tick.value = 0L
                         updateProgressOffset()
-                        // Only set to Finished if not already stopped or in another terminal state.
                         if (_timerState.value is TimerState.Started || _timerState.value is TimerState.Paused) {
                             delay(1000)
                             setTimerState(TimerState.Finished)

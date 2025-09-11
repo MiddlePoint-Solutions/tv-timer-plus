@@ -8,7 +8,6 @@ import android.content.Intent
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import co.touchlab.kermit.Logger
-import dadb.Dadb
 import io.ktor.server.cio.CIO
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.response.respondText
@@ -92,22 +91,6 @@ class WebServerService : Service() {
             get("/check") {
                 sendShellCommand("echo \"Hello there!\"")
                 call.respondText("checking...")
-            }
-
-            get("/discover") {
-                logger.d { "discover" }
-                try {
-                    call.respondText {
-                        Dadb.create("localhost", 5555).use {
-                            logger.d { "created" }
-                            val response = it.shell("ls")
-                            showStatus(response.allOutput)
-                            response.allOutput
-                        }
-                    }
-                } catch (e: Throwable) {
-                    logger.e("discover error", e)
-                }
             }
 
             get("/disable/{packageId}") {

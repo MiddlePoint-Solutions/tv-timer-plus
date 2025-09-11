@@ -33,6 +33,7 @@ import androidx.tv.material3.Text
 import io.middlepoint.tvsleep.MainActivityViewModel
 import io.middlepoint.tvsleep.R
 import io.middlepoint.tvsleep.ui.theme.TVsleepTheme
+// TimeOptionItem and timeOptions are available as they are in the same package
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
@@ -45,8 +46,8 @@ fun TimeSelectionScreen(
             modifier
                 .fillMaxSize()
                 .padding(20.dp),
-        onClick = { timeInMillis ->
-            viewModel.onTimeSelected(timeInMillis)
+        onClick = { timeOptionItem -> // Changed from timeInMillis to timeOptionItem
+            viewModel.onTimeSelected(timeOptionItem)
         },
     )
 }
@@ -54,7 +55,7 @@ fun TimeSelectionScreen(
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 private fun TimerSetup(
-    onClick: (Long) -> Unit,
+    onClick: (TimeOptionItem) -> Unit, // Changed from (Long) -> Unit
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -87,7 +88,7 @@ private fun TimerSetup(
                 items(timeOptions, key = { it.time }) { item ->
                     TimeOption(
                         time = item.time,
-                        onClick = { onClick(item.timeInMillis) },
+                        onClick = { onClick(item) }, // Changed from onClick(item.timeInMillis)
                     )
                 }
             }
@@ -129,6 +130,6 @@ private fun TimeOption(
 @Composable
 private fun HomeScreenPreview() {
     TVsleepTheme {
-        TimerSetup(onClick = {})
+        TimerSetup(onClick = {}) // Preview onClick remains the same, will adapt to new signature
     }
 }

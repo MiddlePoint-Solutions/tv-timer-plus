@@ -12,6 +12,7 @@ import co.touchlab.kermit.Logger
 import com.draco.ladb.utils.DnsDiscover
 import io.middlepoint.tvsleep.timer.TimeKeeper
 import io.middlepoint.tvsleep.timer.TimerController
+import io.middlepoint.tvsleep.ui.screens.TimeOptionItem
 import io.middlepoint.tvsleep.utils.ADB
 import io.middlepoint.tvsleep.utils.TimerState
 import kotlinx.coroutines.Dispatchers
@@ -70,8 +71,8 @@ class MainActivityViewModel(
         }
     }
 
-    fun onTimeSelected(timeInMillis: Long) {
-        timeKeeper.selectTime(timeInMillis)
+    fun onTimeSelected(timeOptionItem: TimeOptionItem) {
+        timeKeeper.selectTime(timeOptionItem) // Updated to pass the whole TimeOptionItem
     }
 
     fun handleMainScreenOptionButtonPressed() {
