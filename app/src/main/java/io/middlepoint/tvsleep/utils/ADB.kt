@@ -88,6 +88,8 @@ class ADB(
     private val monitorScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private var monitorJob: Job? = null
 
+    private var initJob: Job? = null
+
     private fun startAdbSysdumpMonitoring() {
         if (monitorJob?.isActive == true) {
             debug("Monitor is already running.")
@@ -189,10 +191,20 @@ class ADB(
 
         _state.value = AdbState.Connecting
 
+        initJob =
+            monitorScope.launch {
+                delay(30_000)
+                debug("Timed out waiting for ADB server to start!")
+                _state.value = AdbState.Failed("Timed out waiting for ADB server to start!")
+            }
+
         if (autoShell) {
             if (secureSettingsGranted) {
                 disableMobileDataAlwaysOn()
-                if (!isUSBDebuggingEnabled()) {
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    cycleWirelessDebugging()
+                } else if (!isUSBDebuggingEnabled()) {
                     debug("Turning on USB debugging...")
                     withContext(Dispatchers.IO) {
                         Settings.Global.putInt(
@@ -206,6 +218,7 @@ class ADB(
             }
 
             if (!isUSBDebuggingEnabled()) {
+                initJob?.cancel()
                 _state.value = AdbState.Failed("USB debugging is not enabled!")
                 debug("USB debugging is not enabled!")
                 debug("Settings -> Developer options -> USB debugging")
@@ -316,13 +329,20 @@ class ADB(
             sendToShellProcess(startupCommand)
         }
 
+        initJob?.cancel()
+
         _state.value = AdbState.Ready
         _running.value = true
         tryingToPair = false
         return true
     }
 
-    private fun isWirelessDebuggingEnabled() = Settings.Global.getInt(context.contentResolver, "adb_wifi_enabled", 0) == 1
+    private fun isWirelessDebuggingEnabled() =
+        Settings.Global.getInt(
+            context.contentResolver,
+            ADB_WIFI_ENABLED,
+            0,
+        ) == 1
 
     private fun isUSBDebuggingEnabled() = Settings.Global.getInt(context.contentResolver, Settings.Global.ADB_ENABLED, 0) == 1
 
@@ -355,23 +375,23 @@ class ADB(
                 if (isWirelessDebuggingEnabled()) {
                     debug("Turning off wireless debugging...")
                     withContext(Dispatchers.IO) {
-                        Settings.Global.putInt(context.contentResolver, "adb_wifi_enabled", 0)
+                        Settings.Global.putInt(context.contentResolver, ADB_WIFI_ENABLED, 0)
                     }
                     delay(3_000)
                 }
                 debug("Turning on wireless debugging...")
                 withContext(Dispatchers.IO) {
-                    Settings.Global.putInt(context.contentResolver, "adb_wifi_enabled", 1)
+                    Settings.Global.putInt(context.contentResolver, ADB_WIFI_ENABLED, 1)
                 }
                 delay(3_000)
                 debug("Turning off wireless debugging...")
                 withContext(Dispatchers.IO) {
-                    Settings.Global.putInt(context.contentResolver, "adb_wifi_enabled", 0)
+                    Settings.Global.putInt(context.contentResolver, ADB_WIFI_ENABLED, 0)
                 }
                 delay(3_000)
                 debug("Turning on wireless debugging...")
                 withContext(Dispatchers.IO) {
-                    Settings.Global.putInt(context.contentResolver, "adb_wifi_enabled", 1)
+                    Settings.Global.putInt(context.contentResolver, ADB_WIFI_ENABLED, 1)
                 }
                 delay(3_000)
             }
@@ -488,6 +508,7 @@ class ADB(
     companion object {
         const val MAX_OUTPUT_BUFFER_SIZE = 1024 * 16
         const val OUTPUT_BUFFER_DELAY_MS = 100L
+        private const val ADB_WIFI_ENABLED = "adb_wifi_enabled"
 
         @SuppressLint("StaticFieldLeak")
         @Volatile

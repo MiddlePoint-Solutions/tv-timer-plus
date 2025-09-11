@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -25,6 +27,7 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Surface
 import androidx.tv.material3.SurfaceColors
 import androidx.tv.material3.SurfaceDefaults
+import androidx.tv.material3.Text
 import co.touchlab.kermit.Logger
 import io.middlepoint.tvsleep.ui.screens.Connecting
 import io.middlepoint.tvsleep.ui.screens.ConnectingScreen
@@ -54,6 +57,7 @@ class MainActivity : ComponentActivity() {
             val viewModel by viewModels<MainActivityViewModel>()
             val homeState by viewModel.homeState.collectAsState()
             val navController = rememberNavController()
+            val isDebug = remember { BuildConfig.DEBUG }
 
             TVsleepTheme {
                 Surface(
@@ -90,6 +94,14 @@ class MainActivity : ComponentActivity() {
                         composable<Debug> {
                             DebugScreen(navController, viewModel)
                         }
+                    }
+
+                    if (isDebug) {
+                        val status by viewModel.outputText.collectAsState("Waiting Status")
+                        Text(
+                            status,
+                            modifier = Modifier.align(Alignment.TopStart),
+                        )
                     }
 
                     BackHandler {
