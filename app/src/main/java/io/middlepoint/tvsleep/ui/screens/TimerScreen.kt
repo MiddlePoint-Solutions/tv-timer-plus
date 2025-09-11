@@ -3,31 +3,37 @@ package io.middlepoint.tvsleep.ui.screens
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Pause
-import androidx.compose.material.icons.outlined.PlayArrow
-import androidx.compose.material.icons.outlined.Stop
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Stop
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.tv.material3.Button
+import androidx.tv.material3.Card
+import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
-import androidx.tv.material3.IconButton
-import androidx.tv.material3.MaterialTheme
-import androidx.tv.material3.Text
 import io.middlepoint.tvsleep.R
 import io.middlepoint.tvsleep.ui.components.MainTimer
 import io.middlepoint.tvsleep.utils.TimerState
@@ -63,7 +69,7 @@ fun TimerScreen(
             timerScreenState = timerScreenState,
             modifier =
                 Modifier
-                    .size(200.dp)
+                    .size(247.dp)
                     .constrainAs(timer) {
                         linkTo(
                             start = parent.start,
@@ -82,7 +88,7 @@ fun TimerScreen(
             modifier =
                 Modifier
                     .constrainAs(actionButtons) {
-                        bottom.linkTo(parent.bottom, margin = 16.dp)
+                        top.linkTo(timer.bottom, margin = 24.dp) // Adjusted margin
                         linkTo(
                             start = parent.start,
                             end = parent.end,
@@ -101,52 +107,64 @@ private fun ActionButtons(
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    @Suppress("ktlint:standard:no-consecutive-comments")
-    ConstraintLayout(modifier) {
-        val (action, delete) = createRefs()
-        IconButton(
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(timerScreenState) {
+        if (timerScreenState is TimerState.Running || timerScreenState == TimerState.Started) {
+            focusRequester.requestFocus()
+        }
+    }
+
+    Row(
+        modifier = modifier.fillMaxWidth(), // Apply the modifier passed from the parent
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Card(
             onClick = onActionClick,
             modifier =
                 Modifier
-                    .size(56.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        shape = CircleShape,
-                    ).constrainAs(action) {
-                        linkTo(
-                            start = parent.start,
-                            end = parent.end,
-                        )
-                    },
+                    .size(96.dp)
+                    .focusRequester(focusRequester),
+            shape = CardDefaults.shape(),
         ) {
-            val icon =
-                when (timerScreenState) {
-                    is TimerState.Running, TimerState.Started -> Icons.Outlined.Pause
-                    is TimerState.Start, TimerState.Paused, TimerState.Stopped -> Icons.Outlined.PlayArrow
-                    TimerState.Finish, TimerState.Finished -> Icons.Outlined.Stop
-                }
-            Icon(
-                imageVector = icon,
-                contentDescription = stringResource(R.string.label_start),
-                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-            )
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                val icon =
+                    when (timerScreenState) {
+                        is TimerState.Running, TimerState.Started -> Icons.Filled.Pause
+                        is TimerState.Start, TimerState.Paused, TimerState.Stopped -> Icons.Filled.PlayArrow
+                        TimerState.Finish, TimerState.Finished -> Icons.Filled.Stop
+                    }
+                Icon(
+                    imageVector = icon,
+                    contentDescription = stringResource(R.string.label_start),
+                    modifier = Modifier.size(48.dp),
+                )
+            }
         }
-        Button(
+
+        Spacer(Modifier.width(80.dp))
+
+        Card(
             onClick = onDelete,
             modifier =
-                Modifier.constrainAs(delete) {
-                    linkTo(top = action.top, bottom = action.bottom)
-                    start.linkTo(parent.start, margin = 16.dp)
-                },
+                Modifier
+                    .size(96.dp),
+            shape = CardDefaults.shape(),
         ) {
-            Text(
-                text = stringResource(R.string.label_delete),
-                style =
-                    MaterialTheme.typography.bodyMedium.copy(
-                        letterSpacing = 0.sp,
-                        fontWeight = FontWeight.W400,
-                    ),
-            )
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Delete,
+                    contentDescription = stringResource(R.string.label_delete),
+                    modifier = Modifier.size(48.dp),
+                )
+            }
         }
     }
 }

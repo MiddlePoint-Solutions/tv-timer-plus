@@ -66,6 +66,7 @@ private fun TimerSetup(
 
         Text(
             text = stringResource(R.string.timer_setup_title),
+            modifier = Modifier.padding(top = 40.dp),
             style = MaterialTheme.typography.displayLarge,
         )
 
