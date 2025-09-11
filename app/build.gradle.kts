@@ -68,7 +68,7 @@ dependencies {
 
     implementation(libs.androidx.lifecycle.viewmodel)
 
-//    implementation(libs.dadb)
+    implementation(libs.smoothmotion)
     implementation(libs.kermit)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.preference.ktx)

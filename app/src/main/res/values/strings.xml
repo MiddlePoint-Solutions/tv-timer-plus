@@ -11,5 +11,5 @@
     <string name="label_time_up">Time\'s up</string>
     <string name="label_stop">STOP</string>
     <string name="timer_setup_title">Set Watch Time</string>
-    <string name="checking_device_setup">Checking Device Setup…</string>
+    <string name="checking_device_setup">Checking Device Setup</string>
 </resources>
