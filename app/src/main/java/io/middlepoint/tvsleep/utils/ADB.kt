@@ -202,9 +202,11 @@ class ADB(
             if (secureSettingsGranted) {
                 disableMobileDataAlwaysOn()
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    cycleWirelessDebugging()
-                } else if (!isUSBDebuggingEnabled()) {
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+//                    cycleWirelessDebugging()
+//                } else
+
+                if (!isUSBDebuggingEnabled()) {
                     debug("Turning on USB debugging...")
                     withContext(Dispatchers.IO) {
                         Settings.Global.putInt(
