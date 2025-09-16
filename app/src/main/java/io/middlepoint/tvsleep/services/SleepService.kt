@@ -35,7 +35,7 @@ import io.middlepoint.tvsleep.ComposeLifecycleOwner
 import io.middlepoint.tvsleep.R
 import io.middlepoint.tvsleep.timer.TimeKeeper
 import io.middlepoint.tvsleep.ui.components.MainTimer
-import io.middlepoint.tvsleep.utils.ADB
+import io.middlepoint.tvsleep.utils.ADBOld
 import io.middlepoint.tvsleep.utils.TimerState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -50,7 +50,7 @@ import kotlinx.coroutines.launch
 class SleepService : Service() {
     private val logger = Logger.withTag("SleepService")
     private lateinit var timeKeeper: TimeKeeper
-    private lateinit var adb: ADB
+    private lateinit var adb: ADBOld
     private lateinit var wm: WindowManager
     private lateinit var overlayView: View
     private var composeView: ComposeView? = null
@@ -81,7 +81,7 @@ class SleepService : Service() {
         logger.d("onCreate - Settings.canDrawOverlays(this) is true")
 
         timeKeeper = TimeKeeper.getInstance()
-        adb = ADB.getInstance(this)
+        adb = ADBOld.getInstance(this)
 
         observeTimerState()
 

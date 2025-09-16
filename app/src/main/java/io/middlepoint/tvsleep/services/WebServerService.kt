@@ -14,7 +14,7 @@ import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import io.middlepoint.tvsleep.R
-import io.middlepoint.tvsleep.utils.ADB
+import io.middlepoint.tvsleep.utils.ADBOld
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
 
 class WebServerService : Service() {
     private val logger = Logger.withTag("WebServerService")
-    private val adb by lazy { ADB.getInstance(applicationContext) }
+    private val adb by lazy { ADBOld.getInstance(applicationContext) }
     private val serviceJob = SupervisorJob()
     private val serviceScope = CoroutineScope(Dispatchers.IO + serviceJob)
     private var serverJob: Job? = null

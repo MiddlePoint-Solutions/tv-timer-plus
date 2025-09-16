@@ -14,6 +14,7 @@ import io.middlepoint.tvsleep.timer.TimeKeeper
 import io.middlepoint.tvsleep.timer.TimerController
 import io.middlepoint.tvsleep.ui.screens.TimeOptionItem
 import io.middlepoint.tvsleep.utils.ADB
+import io.middlepoint.tvsleep.utils.ADBOld
 import io.middlepoint.tvsleep.utils.TimerState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -86,7 +87,7 @@ class MainActivityViewModel(
     }
 
     fun startADBServer(callback: ((Boolean) -> (Unit))? = null) {
-        if (_viewModelHasStartedADB.value || adb.running.value) return
+        if (_viewModelHasStartedADB.value || adb.running.value == true) return
 
         viewModelScope.launch(Dispatchers.IO) {
             val success = adb.initServer()
@@ -114,7 +115,7 @@ class MainActivityViewModel(
                     logger.d { "Output: $out" }
                     _outputText.value = out
                 }
-                delay(ADB.OUTPUT_BUFFER_DELAY_MS)
+                delay(ADBOld.OUTPUT_BUFFER_DELAY_MS)
             }
         }
     }

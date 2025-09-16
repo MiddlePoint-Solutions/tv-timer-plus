@@ -4,6 +4,7 @@ kotlin = "2.2.20"
 coreKtx = "1.17.0"
 appcompat = "1.7.1"
 composeBom = "2025.09.00"
+ktlintVersion = "0.4.26"
 tvFoundation = "1.0.0-alpha12"
 tvMaterial = "1.0.1"
 materialIcons = "1.7.8"
@@ -41,6 +42,7 @@ androidx-navigation-compose = { group = "androidx.navigation", name = "navigatio
 androidx-splash = { module = "androidx.core:core-splashscreen", version.ref = "splash-screen" }
 kermit = { group = "co.touchlab", name = "kermit", version.ref = "kermit" }
 androidx-preference-ktx = { group = "androidx.preference", name = "preference-ktx", version.ref = "preferenceKtx" }
+ktlint = { module = "io.nlpez.compose.rules:ktlint", version.ref = "ktlintVersion" }
 smoothmotion = { group = "com.github.abdullahalhakimi", name = "SmoothMotion", version.ref = "smoothMotion" }
 
 # ktor

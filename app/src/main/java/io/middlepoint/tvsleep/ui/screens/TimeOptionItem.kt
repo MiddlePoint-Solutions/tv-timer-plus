@@ -14,7 +14,7 @@ data class TimeOptionItem(
 val timeOptions =
     buildList {
         if (BuildConfig.DEBUG) {
-            add(TimeOptionItem("DEBUG", "Debug", 20.seconds.inWholeMilliseconds))
+            add(TimeOptionItem("DEBUG", "Debug", 10.seconds.inWholeMilliseconds))
         }
         addAll(
             listOf(
