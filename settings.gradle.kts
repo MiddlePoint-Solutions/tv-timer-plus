@@ -12,8 +12,9 @@ pluginManagement {
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev") // Added for Compose Multiplatform
     }
 }
+
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
     repositories {
         google()
         mavenCentral()
@@ -23,4 +24,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "TVsleep"
-include(":app")
+include(":composeApp")
