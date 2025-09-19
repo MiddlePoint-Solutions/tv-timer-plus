@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">TVsleep</string>
+    <string name="app_name">TV Timer+</string>
     <string name="label_timer">Timer</string>
     <string name="label_actions">Actions</string>
     <string name="label_delete">Delete</string>
