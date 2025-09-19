@@ -26,6 +26,7 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 
 private const val ASSETS_BASE = "wasmapp"
+private const val ENCODING_DIR = "$ASSETS_BASE/enc"
 
 fun createKtorWebServer(context: Context) =
     embeddedServer(
@@ -59,12 +60,12 @@ fun createKtorWebServer(context: Context) =
                     ContentType.Text.Any,
                     ContentType.Application.Json,
                     ContentType.Application.JavaScript,
+                    ContentType.Application.Wasm,
                 )
             }
         }
 
         routing {
-//            staticResources("/", "assets/$ASSETS_BASE")
             serveWasmFromAssets(context)
         }
     }
@@ -107,23 +108,26 @@ fun Route.serveWasmFromAssets(context: Context) {
         // Debug: see what Chrome actually offered
         android.util.Log.d("KtorLAN", "GET /$rel  Accept-Encoding=${call.request.headers[HttpHeaders.AcceptEncoding]}")
 
-        // Prefer precompressed .br/.gz for non-HTML
-        if (!assetPath.endsWith(".html", true)) {
-            val encs =
-                call.request.headers[HttpHeaders.AcceptEncoding]
-                    ?.split(',')
-                    ?.map { it.trim().substringBefore(';').lowercase() } ?: emptyList()
+        val encs =
+            call.request.headers[HttpHeaders.AcceptEncoding]
+                ?.split(',')
+                ?.map { it.trim().substringBefore(';').lowercase() } ?: emptyList()
 
-            val brPath = "$assetPath.br"
-            if ("br" in encs && assetExists(am, brPath)) {
-                respondAssetCompressed(call, am, brPath, ct, cache, contentEncoding = "br")
+        if (!assetPath.endsWith(".html", true)) {
+            val brCandidate = "/$assetPath.br"
+            if ("br" in encs && assetExists(am, brCandidate)) {
+                respondAssetCompressed(call, am, brCandidate, ct, cache, "br")
                 return@get
             }
 
-            val gzPath = "$assetPath.gz"
-            if ("gzip" in encs && assetExists(am, gzPath)) {
-                respondAssetCompressed(call, am, gzPath, ct, cache, contentEncoding = "gzip")
-                return@get
+            // gzip in a separate folder to avoid AGP duplicate asset key
+            if ("gzip" in encs && assetPath.endsWith(".wasm", true)) {
+                val fileName = assetPath.substringAfterLast('/') // e.g., cd9c2c….wasm
+                val gzCandidate = "$ENCODING_DIR/$fileName.gz"
+                if (assetExists(am, gzCandidate)) {
+                    respondAssetCompressed(call, am, gzCandidate, ct, cache, "gzip")
+                    return@get
+                }
             }
         }
 

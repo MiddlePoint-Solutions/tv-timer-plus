@@ -120,6 +120,11 @@ android {
         buildConfig = true
     }
 
+    androidResources {
+        // list of extensions WITHOUT leading dots
+        noCompress += listOf("wasm", "js", "mjs", "css", "json", "br", "gz", "map")
+    }
+
     packaging {
         resources {
             excludes += "META-INF/*"
