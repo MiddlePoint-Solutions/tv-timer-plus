@@ -69,7 +69,7 @@ class ADBOld(
     /**
      * State of the ADB connection
      */
-    private val _state = MutableStateFlow<AdbState>(AdbState.Idle)
+    private val _state = MutableStateFlow<AdbState>(AdbState.Connecting)
     val state: StateFlow<AdbState> = _state
 
     /**

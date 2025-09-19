@@ -10,7 +10,6 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import co.touchlab.kermit.Logger
 import com.draco.ladb.utils.DnsDiscover
-import io.middlepoint.tvsleep.services.createKtorWebServer
 import io.middlepoint.tvsleep.timer.TimeKeeper
 import io.middlepoint.tvsleep.timer.TimerController
 import io.middlepoint.tvsleep.ui.screens.TimeOptionItem
@@ -24,7 +23,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.File
 
 @Suppress("ktlint:standard:no-consecutive-comments")
@@ -38,7 +36,7 @@ class MainActivityViewModel(
 
     private val timeKeeper: TimerController = TimeKeeper.getInstance()
 
-    private val _homeState = MutableStateFlow<HomeState>(HomeState.Idle)
+    private val _homeState = MutableStateFlow<HomeState>(HomeState.Connecting)
     val homeState: StateFlow<HomeState> = _homeState.asStateFlow()
 
     val isPairing = MutableStateFlow(false)
@@ -61,16 +59,31 @@ class MainActivityViewModel(
     init {
         startOutputThread()
         dnsDiscover.scanAdbPorts()
+        setupHomeStateFlow()
+    }
 
+    private fun setupHomeStateFlow() {
+        setCurrentHomeState()
         viewModelScope.launch {
             combine(adb.state, timeKeeper.timerState) { adbState, timerControllerState ->
-                val isActive =
-                    timerControllerState !is TimerState.Stopped && timerControllerState !is TimerState.Finished
-                adbState.mapToHomeState(isTimerActive = isActive)
+                deriveHomeState(timerControllerState, adbState)
             }.collect { combinedHomeState ->
                 _homeState.value = combinedHomeState
             }
         }
+    }
+
+    private fun setCurrentHomeState() {
+        _homeState.value = deriveHomeState(timeKeeper.timerState.value, adb.state.value)
+    }
+
+    private fun deriveHomeState(
+        timerControllerState: TimerState,
+        adbState: AdbState,
+    ): HomeState {
+        val isActive =
+            timerControllerState !is TimerState.Stopped && timerControllerState !is TimerState.Finished
+        return adbState.mapToHomeState(isTimerActive = isActive)
     }
 
     fun onTimeSelected(timeOptionItem: TimeOptionItem) {

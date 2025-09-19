@@ -68,7 +68,7 @@ fun createKtorWebServer(context: Context) =
         routing {
             serveWasmFromAssets(context)
         }
-    }
+    }.engine
 
 fun Route.serveWasmFromAssets(context: Context) {
     get("/") {

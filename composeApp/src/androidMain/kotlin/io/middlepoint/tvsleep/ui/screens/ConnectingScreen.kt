@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -21,7 +22,10 @@ import io.middlepoint.tvsleep.R
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-fun ConnectingScreen(modifier: Modifier = Modifier) {
+fun ConnectingScreen(
+    modifier: Modifier = Modifier,
+    startAdbServer: () -> Unit,
+) {
     Column(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
@@ -38,5 +42,9 @@ fun ConnectingScreen(modifier: Modifier = Modifier) {
             text = stringResource(R.string.checking_device_setup),
             style = MaterialTheme.typography.headlineLarge,
         )
+    }
+
+    LaunchedEffect(Unit) {
+        startAdbServer()
     }
 }

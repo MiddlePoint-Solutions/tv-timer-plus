@@ -26,45 +26,24 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Surface
 import androidx.tv.material3.SurfaceDefaults
 import androidx.tv.material3.Text
-import co.touchlab.kermit.Logger
-import io.middlepoint.tvsleep.services.createKtorWebServer
 import io.middlepoint.tvsleep.ui.screens.Connecting
 import io.middlepoint.tvsleep.ui.screens.ConnectingScreen
 import io.middlepoint.tvsleep.ui.screens.Debug
 import io.middlepoint.tvsleep.ui.screens.DebugScreen
 import io.middlepoint.tvsleep.ui.screens.SetupADB
 import io.middlepoint.tvsleep.ui.screens.SetupScreen
-import io.middlepoint.tvsleep.ui.screens.Start
-import io.middlepoint.tvsleep.ui.screens.StartScreen
 import io.middlepoint.tvsleep.ui.screens.TimeSelection
 import io.middlepoint.tvsleep.ui.screens.TimeSelectionScreen
 import io.middlepoint.tvsleep.ui.screens.Timer
 import io.middlepoint.tvsleep.ui.screens.TimerScreen
 import io.middlepoint.tvsleep.ui.screens.mapToScreen
 import io.middlepoint.tvsleep.ui.theme.TVsleepTheme
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 
 @Suppress("ktlint:standard:no-consecutive-comments")
 class MainActivity : ComponentActivity() {
-    private val logger = Logger.withTag("MainActivity")
-
-    private lateinit var serverJob: Job
-
-    private val server by lazy {
-        createKtorWebServer(this@MainActivity)
-    }
-
     @OptIn(ExperimentalTvMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        serverJob =
-            CoroutineScope(Dispatchers.IO).launch {
-                server.start(wait = true)
-            }
 
         setContent {
             val viewModel by viewModels<MainActivityViewModel>()
@@ -85,13 +64,16 @@ class MainActivity : ComponentActivity() {
                 ) {
                     NavHost(
                         navController = navController,
-                        startDestination = Start,
+                        startDestination = Connecting,
                         enterTransition = { fadeIn(spring(stiffness = Spring.StiffnessMedium)) },
                         exitTransition = { fadeOut(spring(stiffness = Spring.StiffnessMedium)) },
                     ) {
-                        composable<Start> {
-                            StartScreen(viewModel)
+                        composable<Connecting> {
+                            ConnectingScreen {
+                                viewModel.startADBServer()
+                            }
                         }
+
                         composable<TimeSelection> {
                             TimeSelectionScreen {
                                 viewModel.onTimeSelected(it)
@@ -103,9 +85,7 @@ class MainActivity : ComponentActivity() {
                         composable<SetupADB> {
                             SetupScreen()
                         }
-                        composable<Connecting> {
-                            ConnectingScreen()
-                        }
+
                         composable<Debug> {
                             DebugScreen(navController, viewModel)
                         }
@@ -129,7 +109,7 @@ class MainActivity : ComponentActivity() {
                                 route = state.mapToScreen(),
                                 navOptions =
                                     navOptions {
-                                        popUpTo(Start) { inclusive = true }
+                                        popUpTo(Connecting) { inclusive = true }
                                     },
                             )
                         }

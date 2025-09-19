@@ -7,9 +7,6 @@ import kotlinx.serialization.Serializable
 sealed class Screen
 
 @Serializable
-data object Start : Screen()
-
-@Serializable
 data object TimeSelection : Screen()
 
 @Serializable
@@ -28,7 +25,6 @@ fun HomeState.mapToScreen(): Screen =
     when (this) {
         HomeState.Connecting -> Connecting
         HomeState.Failed -> SetupADB
-        HomeState.Idle -> Start
         HomeState.TimeSelection -> TimeSelection
         HomeState.Timer -> Timer
     }

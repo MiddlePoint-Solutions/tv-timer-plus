@@ -1,8 +1,6 @@
 package io.middlepoint.tvsleep
 
 sealed class HomeState {
-    data object Idle : HomeState()
-
     data object Connecting : HomeState()
 
     data object TimeSelection : HomeState()
@@ -14,7 +12,6 @@ sealed class HomeState {
 
 fun AdbState.mapToHomeState(isTimerActive: Boolean): HomeState =
     when (this) {
-        AdbState.Idle -> HomeState.Idle
         AdbState.Connecting -> HomeState.Connecting
         AdbState.Ready ->
             if (isTimerActive) {
