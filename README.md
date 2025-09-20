@@ -7,15 +7,11 @@ This makes it perfect for:
 - **Auto sleep in the evening** (so the TV won’t stay on overnight).
 - **Parental control** to help manage children’s screen time.
 
----
-
 ## ✨ Features
 
 - ⏱️ **Preset timer selection** – quickly choose a preset duration.
 - ⏳ **Countdown timer** – puts the TV to sleep automatically when finished.
 - 🔒 **Completely local** – no internet connection required.
-
----
 
 ## 🛠️ Roadmap
 
@@ -25,20 +21,14 @@ Planned features for future releases:
 - ⏰ **Custom timer durations** – add your own time intervals.
 - 🛑 **More actions than sleep** – additional options once the timer ends.
 
----
+## 🤝 Contributing
+
+Contributions are welcome! Feel free to open issues, suggest features, or submit pull requests.
 
 ## 🙏 Acknowledgments
 
 This project was inspired by the excellent open-source project:
 - [LADB](https://github.com/tytydraco/LADB)
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Feel free to open issues, suggest features, or submit pull requests.
-
----
 
 ## 🔒 Privacy Policy
 
