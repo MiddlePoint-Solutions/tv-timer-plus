@@ -10,11 +10,13 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import co.touchlab.kermit.Logger
 import com.draco.ladb.utils.DnsDiscover
+import io.middlepoint.tvsleep.model.AdbState
+import io.middlepoint.tvsleep.model.HomeState
+import io.middlepoint.tvsleep.model.mapToHomeState
 import io.middlepoint.tvsleep.timer.TimeKeeper
 import io.middlepoint.tvsleep.timer.TimerController
 import io.middlepoint.tvsleep.ui.screens.TimeOptionItem
 import io.middlepoint.tvsleep.utils.ADB
-import io.middlepoint.tvsleep.utils.ADBOld
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -90,16 +92,6 @@ class MainActivityViewModel(
         timeKeeper.selectTime(timeOptionItem) // Updated to pass the whole TimeOptionItem
     }
 
-    fun handleMainScreenOptionButtonPressed() {
-        // This action is initiated from the androidMain screen context.
-        // If it's purely a timer modification, it could also be in TimerScreenViewModel,
-        // but if it's a general quick action from home, it can stay.
-        timeKeeper.addTime(60000L) // Add 1 minute
-        // Potentially, this could also trigger a navigation to TimerScreen if not already there
-        // or update HomeState to reflect that a timer has just been activated/modified.
-        // For now, it just adds time.
-    }
-
     fun startADBServer(callback: ((Boolean) -> (Unit))? = null) {
         if (_viewModelHasStartedADB.value || adb.running.value == true) return
 
@@ -129,7 +121,7 @@ class MainActivityViewModel(
                     logger.d { "Output: $out" }
                     _outputText.value = out
                 }
-                delay(ADBOld.OUTPUT_BUFFER_DELAY_MS)
+                delay(ADB.OUTPUT_BUFFER_DELAY_MS)
             }
         }
     }
@@ -138,19 +130,6 @@ class MainActivityViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             adb.waitForDeathAndReset()
         }
-    }
-
-    fun clearOutputText() {
-        adb.outputBufferFile.writeText("")
-        _outputText.value = ""
-    }
-
-    fun needsToPair(): Boolean =
-        !sharedPreferences.getBoolean(Constants.pairedKey, false) &&
-            (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
-
-    fun setPairedBefore(value: Boolean) {
-        sharedPreferences.edit { putBoolean(Constants.pairedKey, value) }
     }
 
     private fun readOutputFile(file: File): String {

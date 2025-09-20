@@ -1,6 +1,6 @@
 package io.middlepoint.tvsleep.ui.screens
 
-import io.middlepoint.tvsleep.HomeState
+import io.middlepoint.tvsleep.model.HomeState
 import kotlinx.serialization.Serializable
 
 @Serializable

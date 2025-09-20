@@ -4,7 +4,7 @@ import android.content.Context
 import co.touchlab.kermit.Logger
 import io.ktor.server.engine.ApplicationEngine
 import io.middlepoint.tvsleep.services.createKtorWebServer
-import io.middlepoint.tvsleep.utils.ADBOld // Assuming ADBOld is correctly located and set up
+import io.middlepoint.tvsleep.utils.ADB
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -22,7 +22,7 @@ class ActivityServerManager private constructor(
     private var serverInstance: ApplicationEngine? = createKtorWebServer(context)
 
     // Initialize ADBOld instance lazily using the application context
-    private val adb by lazy { ADBOld.getInstance(context) }
+    private val adb by lazy { ADB.getInstance(context) }
 
     private val showStatusLambda: (String) -> Unit = { message ->
         logger.i { "Server Status: $message" }

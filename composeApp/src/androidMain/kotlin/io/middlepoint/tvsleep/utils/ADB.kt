@@ -11,9 +11,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.preference.PreferenceManager
 import com.draco.ladb.utils.DnsDiscover
-import io.middlepoint.tvsleep.AdbState
 import io.middlepoint.tvsleep.BuildConfig
 import io.middlepoint.tvsleep.R
+import io.middlepoint.tvsleep.model.AdbState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -160,9 +160,7 @@ class ADB(
             // Only do wireless debugging steps on compatible versions
             if (secureSettingsGranted) {
                 disableMobileDataAlwaysOn()
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && false) { // TODO: remove after testing
-                    cycleWirelessDebugging()
-                } else if (!isUSBDebuggingEnabled()) {
+                if (!isUSBDebuggingEnabled()) {
                     debug("Turning on USB debugging...")
                     Settings.Global.putInt(
                         context.contentResolver,
@@ -175,26 +173,14 @@ class ADB(
             }
 
             // Check again...
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && false) { // TODO: remove after testing
-                if (!isWirelessDebuggingEnabled()) {
-                    debug("Wireless debugging is not enabled!")
-                    debug("Settings -> Developer options -> Wireless debugging")
-                    debug("Waiting for wireless debugging...")
+            if (!isUSBDebuggingEnabled()) {
+                debug("USB debugging is not enabled!")
+                debug("Settings -> Developer options -> USB debugging")
+                debug("Waiting for USB debugging...")
+                _state.value = AdbState.Failed("Timed out waiting for ADB server to start!")
 
-                    while (!isWirelessDebuggingEnabled()) {
-                        Thread.sleep(1_000)
-                    }
-                }
-            } else {
-                if (!isUSBDebuggingEnabled()) {
-                    debug("USB debugging is not enabled!")
-                    debug("Settings -> Developer options -> USB debugging")
-                    debug("Waiting for USB debugging...")
-                    _state.value = AdbState.Failed("Timed out waiting for ADB server to start!")
-
-                    while (!isUSBDebuggingEnabled()) {
-                        Thread.sleep(1_000)
-                    }
+                while (!isUSBDebuggingEnabled()) {
+                    Thread.sleep(1_000)
                 }
             }
 
@@ -274,10 +260,10 @@ class ADB(
                         Log.w("DEVICES", "Choosing first local device: $serialId")
                         argList = listOf("-s", serialId, "shell")
                     } else {
-                    /*
-                     * If no local devices to use, try to filter out
-                     * any emulator devices and choose the first remaining result.
-                     */
+            /*
+             * If no local devices to use, try to filter out
+             * any emulator devices and choose the first remaining result.
+             */
 
                         val nonEmulators =
                             deviceList.filterNot { it ->
@@ -317,7 +303,10 @@ class ADB(
         }
 
         val startupCommand =
-            sharedPrefs.getString(context.getString(R.string.startup_command_key), "echo 'Success! ※\\(^o^)/※'")!!
+            sharedPrefs.getString(
+                context.getString(R.string.startup_command_key),
+                "echo 'Success! ※\\(^o^)/※'",
+            )!!
         if (startupCommand.isNotEmpty()) {
             sendToShellProcess(startupCommand)
         }
@@ -335,6 +324,10 @@ class ADB(
     private fun isUSBDebuggingEnabled() = Settings.Global.getInt(context.contentResolver, Settings.Global.ADB_ENABLED, 0) == 1
 
     private fun isMobileDataAlwaysOnEnabled() = Settings.Global.getInt(context.contentResolver, "mobile_data_always_on", 0) == 1
+
+    fun goToSleep() {
+        sendToShellProcess("input keyevent KEYCODE_POWER")
+    }
 
     /**
      * Settings.Global.MOBILE_DATA_ALWAYS_ON creates a bug

@@ -1,4 +1,4 @@
-package io.middlepoint.tvsleep
+package io.middlepoint.tvsleep.model
 
 sealed class HomeState {
     data object Connecting : HomeState()

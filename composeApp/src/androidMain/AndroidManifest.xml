@@ -5,7 +5,7 @@
 
     <uses-feature
         android:name="android.software.leanback"
-        android:required="false"/>
+        android:required="true"/>
     <uses-feature
         android:name="android.hardware.touchscreen"
         android:required="false"/>
@@ -53,6 +53,7 @@
 
         <service
             android:name=".services.SleepService"
+            android:foregroundServiceType="specialUse"
             android:exported="false" />
 
 
