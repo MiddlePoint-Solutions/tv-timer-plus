@@ -2,7 +2,9 @@ package io.middlepoint.tvsleep
 
 import android.content.Context
 import co.touchlab.kermit.Logger
+import io.ktor.server.cio.CIOApplicationEngine
 import io.ktor.server.engine.ApplicationEngine
+import io.ktor.server.engine.EmbeddedServer
 import io.middlepoint.tvsleep.services.createKtorWebServer
 import io.middlepoint.tvsleep.utils.ADB
 import kotlinx.coroutines.CoroutineScope
@@ -19,7 +21,7 @@ class ActivityServerManager private constructor(
     private val serverScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private var serverJob: Job? = null
-    private var serverInstance: ApplicationEngine? = createKtorWebServer(context)
+    private var serverInstance: EmbeddedServer<CIOApplicationEngine, CIOApplicationEngine.Configuration>? = createKtorWebServer(context)
 
     // Initialize ADBOld instance lazily using the application context
     private val adb by lazy { ADB.getInstance(context) }

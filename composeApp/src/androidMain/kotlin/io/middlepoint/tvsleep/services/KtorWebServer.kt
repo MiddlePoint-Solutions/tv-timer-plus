@@ -11,6 +11,9 @@ import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.install
 import io.ktor.server.cio.CIO
 import io.ktor.server.engine.embeddedServer
+import io.ktor.server.http.content.CompressedFileType
+import io.ktor.server.http.content.preCompressed
+import io.ktor.server.http.content.staticResources
 import io.ktor.server.plugins.autohead.AutoHeadResponse
 import io.ktor.server.plugins.compression.Compression
 import io.ktor.server.plugins.compression.gzip
@@ -60,7 +63,6 @@ fun createKtorWebServer(context: Context) =
                     ContentType.Text.Any,
                     ContentType.Application.Json,
                     ContentType.Application.JavaScript,
-                    ContentType.Application.Wasm,
                 )
             }
         }
@@ -68,7 +70,7 @@ fun createKtorWebServer(context: Context) =
         routing {
             serveWasmFromAssets(context)
         }
-    }.engine
+    }
 
 fun Route.serveWasmFromAssets(context: Context) {
     get("/") {
@@ -97,16 +99,39 @@ fun Route.serveWasmFromAssets(context: Context) {
         val (ct, cache) =
             when {
                 assetPath.endsWith(".html", true) -> ContentType.Text.Html to "no-cache"
-                assetPath.endsWith(".js", true) -> ContentType.Application.JavaScript to "public, max-age=31536000, immutable"
-                assetPath.endsWith(".mjs", true) -> ContentType.Application.JavaScript to "public, max-age=31536000, immutable"
-                assetPath.endsWith(".css", true) -> ContentType.Text.CSS to "public, max-age=31536000, immutable"
-                assetPath.endsWith(".json", true) -> ContentType.Application.Json to "public, max-age=31536000, immutable"
-                assetPath.endsWith(".wasm", true) -> ContentType.parse("application/wasm") to "public, max-age=31536000, immutable"
+                assetPath.endsWith(
+                    ".js",
+                    true,
+                ) -> ContentType.Application.JavaScript to "public, max-age=31536000, immutable"
+
+                assetPath.endsWith(
+                    ".mjs",
+                    true,
+                ) -> ContentType.Application.JavaScript to "public, max-age=31536000, immutable"
+
+                assetPath.endsWith(
+                    ".css",
+                    true,
+                ) -> ContentType.Text.CSS to "public, max-age=31536000, immutable"
+
+                assetPath.endsWith(
+                    ".json",
+                    true,
+                ) -> ContentType.Application.Json to "public, max-age=31536000, immutable"
+
+                assetPath.endsWith(
+                    ".wasm",
+                    true,
+                ) -> ContentType.parse("application/wasm") to "public, max-age=31536000, immutable"
+
                 else -> ContentType.defaultForFilePath(assetPath.substringAfterLast('/')) to "public, max-age=86400"
             }
 
         // Debug: see what Chrome actually offered
-        android.util.Log.d("KtorLAN", "GET /$rel  Accept-Encoding=${call.request.headers[HttpHeaders.AcceptEncoding]}")
+        android.util.Log.d(
+            "KtorLAN",
+            "GET /$rel  Accept-Encoding=${call.request.headers[HttpHeaders.AcceptEncoding]}",
+        )
 
         val encs =
             call.request.headers[HttpHeaders.AcceptEncoding]
