@@ -5,26 +5,27 @@
 
     <uses-feature
         android:name="android.software.leanback"
-        android:required="true"/>
+        android:required="true" />
     <uses-feature
         android:name="android.hardware.touchscreen"
-        android:required="false"/>
+        android:required="false" />
 
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission
         android:name="android.permission.WRITE_SECURE_SETTINGS"
-        tools:ignore="ProtectedPermissions"/>
+        tools:ignore="ProtectedPermissions" />
 
     <uses-permission
         android:name="android.permission.ACCESS_WIFI_STATE"
-        android:required="true"/>
+        android:required="true" />
     <uses-permission
         android:name="android.permission.CHANGE_WIFI_STATE"
-        android:required="true"/>
+        android:required="true" />
 
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-        <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"
+    <uses-permission
+        android:name="android.permission.SYSTEM_ALERT_WINDOW"
         tools:ignore="ProtectedPermissions" />
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
@@ -40,9 +41,9 @@
         android:theme="@style/Theme.App.Starting">
         <activity
             android:name=".MainActivity"
-            android:theme="@style/Theme.TVsleep"
+            android:exported="true"
             android:launchMode="singleTask"
-            android:exported="true">
+            android:theme="@style/Theme.TVsleep">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -53,8 +54,8 @@
 
         <service
             android:name=".services.SleepService"
-            android:foregroundServiceType="specialUse"
-            android:exported="false" />
+            android:exported="false"
+            android:foregroundServiceType="specialUse" />
 
 
     </application>
