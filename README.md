@@ -3,7 +3,7 @@
 TV Timer+ helps you manage your TV with a simple countdown timer that automatically puts your device to sleep.
 Perfect for Android TV based devices and set-top boxes, it’s the easiest way to prevent late-night streaming or manage children’s screen time.
 
-⚙️ How it works
+## ⚙️ How it works
 
 TV Timer+ communicates directly with your device through the built-in local ADB service on Android TV.
 This allows the app to send secure commands that manage TV functions — such as sleep mode today, and more parental control options in future updates.
