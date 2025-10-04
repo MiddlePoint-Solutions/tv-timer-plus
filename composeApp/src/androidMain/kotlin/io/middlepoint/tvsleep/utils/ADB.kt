@@ -298,6 +298,7 @@ class ADB(
         if (autoShell) {
             sendToShellProcess("echo 'Entered adb shell'")
             sendToShellProcess("appops set ${context.packageName} SYSTEM_ALERT_WINDOW allow")
+            sendToShellProcess("adb shell dumpsys deviceidle whitelist +${context.packageName}")
         } else {
             sendToShellProcess("echo 'Entered non-adb shell'")
         }
