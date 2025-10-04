@@ -48,6 +48,7 @@ kotlin {
 
             implementation(libs.androidx.navigation.compose)
             implementation(libs.androidx.lifecycle.viewmodel)
+            implementation(libs.kotlinx.serialization.json)
         }
 
         androidMain.dependencies {
