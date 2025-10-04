@@ -1,6 +1,5 @@
 package io.middlepoint.tvsleep.ui.screens
 
-// Removed imports that are now only needed in TimerScreen.kt
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,8 +31,6 @@ import androidx.tv.material3.Text
 import io.middlepoint.tvsleep.R
 import io.middlepoint.tvsleep.ui.theme.TVsleepTheme
 
-// TimeOptionItem and timeOptions are available as they are in the same package
-
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun TimeSelectionScreen(
@@ -52,7 +49,7 @@ fun TimeSelectionScreen(
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 private fun TimerSetup(
-    onClick: (TimeOptionItem) -> Unit, // Changed from (Long) -> Unit
+    onClick: (TimeOptionItem) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -85,7 +82,14 @@ private fun TimerSetup(
                 items(timeOptions, key = { it.time }) { item ->
                     TimeOption(
                         time = item.time,
-                        onClick = { onClick(item) }, // Changed from onClick(item.timeInMillis)
+                        onClick = { onClick(item) },
+                    )
+                }
+
+                item {
+                    TimeOption(
+                        time = "Custom",
+                        onClick = { },
                     )
                 }
             }
