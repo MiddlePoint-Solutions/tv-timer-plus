@@ -31,7 +31,6 @@ import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
-import io.middlepoint.tvsleep.BuildConfig
 import io.middlepoint.tvsleep.R
 import io.middlepoint.tvsleep.ui.theme.TVsleepTheme
 
@@ -43,13 +42,22 @@ fun TimeSelectionScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    if (uiState.showDialog) {
+        CustomTimeDialog(
+            onDismissRequest = { viewModel.onEvent(TimeSelectionEvent.HideCustomTimeDialog) },
+            onSave = { time, label ->
+                viewModel.onEvent(TimeSelectionEvent.SaveCustomTime(time, label))
+            },
+        )
+    }
+
     TimerSetup(
         modifier =
-            modifier
-                .fillMaxSize()
-                .padding(20.dp),
+        modifier
+            .fillMaxSize()
+            .padding(20.dp),
         timeOptions = uiState.timeOptions,
-        onClick = { viewModel.onEvent(TimeSelectionEvent.OnTimeSelected(it)) },
+        onEvent = viewModel::onEvent,
     )
 }
 
@@ -57,7 +65,7 @@ fun TimeSelectionScreen(
 @Composable
 private fun TimerSetup(
     timeOptions: List<TimeOptionItem>,
-    onClick: (TimeOptionItem) -> Unit,
+    onEvent: (TimeSelectionEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -87,26 +95,17 @@ private fun TimerSetup(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 userScrollEnabled = true,
             ) {
-                if (BuildConfig.DEBUG) {
-                    item {
-                        TimeOption(
-                            time = debugTimeOption.time,
-                            onClick = { onClick(debugTimeOption) },
-                        )
-                    }
-                }
-
                 items(timeOptions, key = { it.time }) { item ->
                     TimeOption(
                         time = item.time,
-                        onClick = { onClick(item) },
+                        onClick = { onEvent(TimeSelectionEvent.OnTimeSelected(item)) },
                     )
                 }
 
                 item {
                     TimeOption(
                         time = "Custom",
-                        onClick = { },
+                        onClick = { onEvent(TimeSelectionEvent.ShowCustomTimeDialog) },
                     )
                 }
             }
@@ -148,6 +147,6 @@ private fun TimeOption(
 @Composable
 private fun HomeScreenPreview() {
     TVsleepTheme {
-        TimerSetup(timeOptions = emptyList(), onClick = {}) // Preview onClick remains the same, will adapt to new signature
+        TimerSetup(timeOptions = emptyList(), onEvent = {}) // Preview onClick remains the same, will adapt to new signature
     }
 }
