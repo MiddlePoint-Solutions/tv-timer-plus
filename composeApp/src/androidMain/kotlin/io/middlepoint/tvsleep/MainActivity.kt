@@ -75,9 +75,7 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable<TimeSelection> {
-                            TimeSelectionScreen {
-                                viewModel.onEvent(it)
-                            }
+                            TimeSelectionScreen()
                         }
                         composable<Timer> {
                             TimerScreen()
