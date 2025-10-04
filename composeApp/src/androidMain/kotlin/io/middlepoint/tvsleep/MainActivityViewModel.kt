@@ -3,19 +3,17 @@ package io.middlepoint.tvsleep
 import android.app.Application
 import android.content.Context
 import android.net.nsd.NsdManager
-import android.os.Build
-import android.preference.PreferenceManager
-import androidx.core.content.edit
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.preference.PreferenceManager
 import co.touchlab.kermit.Logger
 import com.draco.ladb.utils.DnsDiscover
+import io.middlepoint.tvsleep.events.MainActivityViewEvent
 import io.middlepoint.tvsleep.model.AdbState
 import io.middlepoint.tvsleep.model.HomeState
 import io.middlepoint.tvsleep.model.mapToHomeState
 import io.middlepoint.tvsleep.timer.TimeKeeper
 import io.middlepoint.tvsleep.timer.TimerController
-import io.middlepoint.tvsleep.ui.screens.TimeOptionItem
 import io.middlepoint.tvsleep.utils.ADB
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -88,8 +86,12 @@ class MainActivityViewModel(
         return adbState.mapToHomeState(isTimerActive = isActive)
     }
 
-    fun onTimeSelected(timeOptionItem: TimeOptionItem) {
-        timeKeeper.selectTime(timeOptionItem) // Updated to pass the whole TimeOptionItem
+    fun onEvent(event: MainActivityViewEvent) {
+        when (event) {
+            is MainActivityViewEvent.OnTimeSelected -> {
+                timeKeeper.selectTime(event.timeOptionItem)
+            }
+        }
     }
 
     fun startADBServer(callback: ((Boolean) -> (Unit))? = null) {
