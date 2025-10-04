@@ -13,6 +13,8 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,11 +41,14 @@ fun TimeSelectionScreen(
     modifier: Modifier = Modifier,
     viewModel: TimeSelectionViewModel = viewModel(),
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+
     TimerSetup(
         modifier =
             modifier
                 .fillMaxSize()
                 .padding(20.dp),
+        timeOptions = uiState.timeOptions,
         onClick = { viewModel.onEvent(TimeSelectionEvent.OnTimeSelected(it)) },
     )
 }
@@ -51,6 +56,7 @@ fun TimeSelectionScreen(
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 private fun TimerSetup(
+    timeOptions: List<TimeOptionItem>,
     onClick: (TimeOptionItem) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -142,6 +148,6 @@ private fun TimeOption(
 @Composable
 private fun HomeScreenPreview() {
     TVsleepTheme {
-        TimerSetup(onClick = {}) // Preview onClick remains the same, will adapt to new signature
+        TimerSetup(timeOptions = emptyList(), onClick = {}) // Preview onClick remains the same, will adapt to new signature
     }
 }

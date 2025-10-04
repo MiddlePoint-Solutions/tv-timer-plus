@@ -1,10 +1,11 @@
 package io.middlepoint.tvsleep.ui.screens
 
-import io.middlepoint.tvsleep.BuildConfig
+import kotlinx.serialization.Serializable
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
+@Serializable
 data class TimeOptionItem(
     val time: String,
     val label: String,
@@ -13,7 +14,7 @@ data class TimeOptionItem(
 
 val debugTimeOption = TimeOptionItem("DEBUG", "Debug", 10.seconds.inWholeMilliseconds)
 
-val timeOptions =
+val defaultTimeOptions =
     buildList {
         addAll(
             listOf(
