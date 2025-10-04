@@ -1,5 +1,9 @@
 package io.middlepoint.tvsleep.ui.screens
 
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,6 +15,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.SentimentSatisfied
+import androidx.compose.material.icons.filled.SentimentVerySatisfied
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -20,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -29,6 +38,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.tv.material3.Card
 import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
+import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import io.middlepoint.tvsleep.R
@@ -42,6 +52,10 @@ fun TimeSelectionScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    BackHandler(enabled = uiState.itemInDeleteMode != null) {
+        viewModel.onEvent(TimeSelectionEvent.OnCancelDelete)
+    }
+
     if (uiState.showDialog) {
         CustomTimeDialog(
             onDismissRequest = { viewModel.onEvent(TimeSelectionEvent.HideCustomTimeDialog) },
@@ -52,11 +66,10 @@ fun TimeSelectionScreen(
     }
 
     TimerSetup(
-        modifier =
-        modifier
-            .fillMaxSize()
-            .padding(20.dp),
+        modifier = modifier.fillMaxSize().padding(20.dp),
         timeOptions = uiState.timeOptions,
+        itemInDeleteMode = uiState.itemInDeleteMode,
+        showEasterEgg = uiState.showEasterEgg,
         onEvent = viewModel::onEvent,
     )
 }
@@ -65,6 +78,8 @@ fun TimeSelectionScreen(
 @Composable
 private fun TimerSetup(
     timeOptions: List<TimeOptionItem>,
+    itemInDeleteMode: TimeOptionItem?,
+    showEasterEgg: Boolean,
     onEvent: (TimeSelectionEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -96,16 +111,29 @@ private fun TimerSetup(
                 userScrollEnabled = true,
             ) {
                 items(timeOptions, key = { it.time }) { item ->
+                    val isInDeleteMode = itemInDeleteMode == item
                     TimeOption(
                         time = item.time,
-                        onClick = { onEvent(TimeSelectionEvent.OnTimeSelected(item)) },
+                        isInDeleteMode = isInDeleteMode,
+                        isEasterEgg = false,
+                        onClick = {
+                            if (isInDeleteMode) {
+                                onEvent(TimeSelectionEvent.OnDeleteItem(item))
+                            } else {
+                                onEvent(TimeSelectionEvent.OnTimeSelected(item))
+                            }
+                        },
+                        onLongClick = { onEvent(TimeSelectionEvent.OnTimeItemLongPress(item)) },
                     )
                 }
 
                 item {
                     TimeOption(
                         time = "Custom",
+                        isInDeleteMode = false,
+                        isEasterEgg = showEasterEgg,
                         onClick = { onEvent(TimeSelectionEvent.ShowCustomTimeDialog) },
+                        onLongClick = { onEvent(TimeSelectionEvent.ShowEasterEgg) },
                     )
                 }
             }
@@ -117,28 +145,70 @@ private fun TimerSetup(
     }
 }
 
-@OptIn(ExperimentalTvMaterial3Api::class)
+private enum class TimeOptionContentState {
+    Normal,
+    Delete,
+    EasterEgg,
+}
+
+@OptIn(ExperimentalTvMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 private fun TimeOption(
     time: String = "00:00",
+    isInDeleteMode: Boolean,
+    isEasterEgg: Boolean,
     onClick: () -> Unit,
+    onLongClick: (() -> Unit)?,
 ) {
+    val animatedColor by animateColorAsState(
+        targetValue = if (isInDeleteMode) Color.Red else MaterialTheme.colorScheme.primaryContainer,
+        label = "Card color",
+    )
+
     Card(
         onClick = onClick,
+        onLongClick = onLongClick,
         modifier = Modifier.size(100.dp),
         shape = CardDefaults.shape(),
+        colors = CardDefaults.colors(containerColor = animatedColor),
     ) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center,
         ) {
-            Text(
-                text = time,
-                modifier = Modifier,
-                style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-            )
+            val contentState =
+                when {
+                    isEasterEgg -> TimeOptionContentState.EasterEgg
+                    isInDeleteMode -> TimeOptionContentState.Delete
+                    else -> TimeOptionContentState.Normal
+                }
+            AnimatedContent(targetState = contentState, label = "Content animation") { state ->
+                when (state) {
+                    TimeOptionContentState.Normal -> {
+                        Text(
+                            text = time,
+                            modifier = Modifier,
+                            style = MaterialTheme.typography.headlineLarge,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+                    TimeOptionContentState.Delete -> {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete",
+                            modifier = Modifier.size(48.dp),
+                        )
+                    }
+                    TimeOptionContentState.EasterEgg -> {
+                        Icon(
+                            imageVector = Icons.Default.SentimentVerySatisfied,
+                            contentDescription = "Smiley face",
+                            modifier = Modifier.size(48.dp),
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -147,6 +217,12 @@ private fun TimeOption(
 @Composable
 private fun HomeScreenPreview() {
     TVsleepTheme {
-        TimerSetup(timeOptions = emptyList(), onEvent = {}) // Preview onClick remains the same, will adapt to new signature
+        TimerSetup(
+            timeOptions = emptyList(),
+            itemInDeleteMode = null,
+            showEasterEgg = false,
+            onEvent = {
+            },
+        ) // Preview onClick remains the same, will adapt to new signature
     }
 }

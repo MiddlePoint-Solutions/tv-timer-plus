@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.preference.PreferenceManager
 import io.middlepoint.tvsleep.timer.TimeKeeper
 import io.middlepoint.tvsleep.timer.TimerController
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,11 +20,17 @@ sealed class TimeSelectionEvent {
     object ShowCustomTimeDialog : TimeSelectionEvent()
     object HideCustomTimeDialog : TimeSelectionEvent()
     data class SaveCustomTime(val timeInMinutes: String, val label: String) : TimeSelectionEvent()
+    data class OnTimeItemLongPress(val timeOptionItem: TimeOptionItem) : TimeSelectionEvent()
+    data class OnDeleteItem(val timeOptionItem: TimeOptionItem) : TimeSelectionEvent()
+    object OnCancelDelete : TimeSelectionEvent()
+    object ShowEasterEgg : TimeSelectionEvent()
 }
 
 data class TimeSelectionState(
     val timeOptions: List<TimeOptionItem> = emptyList(),
     val showDialog: Boolean = false,
+    val itemInDeleteMode: TimeOptionItem? = null,
+    val showEasterEgg: Boolean = false
 )
 
 class TimeSelectionViewModel(application: Application) : AndroidViewModel(application) {
@@ -56,10 +63,14 @@ class TimeSelectionViewModel(application: Application) : AndroidViewModel(applic
     fun onEvent(event: TimeSelectionEvent) {
         when (event) {
             is TimeSelectionEvent.OnTimeSelected -> {
-                timeKeeper.selectTime(event.timeOptionItem)
+                if (_uiState.value.itemInDeleteMode != null) {
+                    onEvent(TimeSelectionEvent.OnCancelDelete)
+                } else {
+                    timeKeeper.selectTime(event.timeOptionItem)
+                }
             }
             is TimeSelectionEvent.ShowCustomTimeDialog -> {
-                _uiState.value = _uiState.value.copy(showDialog = true)
+                _uiState.value = _uiState.value.copy(showDialog = true, itemInDeleteMode = null)
             }
             is TimeSelectionEvent.HideCustomTimeDialog -> {
                 _uiState.value = _uiState.value.copy(showDialog = false)
@@ -79,6 +90,25 @@ class TimeSelectionViewModel(application: Application) : AndroidViewModel(applic
                 sharedPreferences.edit().putString("time_options", jsonString).apply()
 
                 _uiState.value = _uiState.value.copy(timeOptions = updatedTimeOptions, showDialog = false)
+            }
+            is TimeSelectionEvent.OnTimeItemLongPress -> {
+                _uiState.value = _uiState.value.copy(itemInDeleteMode = event.timeOptionItem)
+            }
+            is TimeSelectionEvent.OnDeleteItem -> {
+                val updatedTimeOptions = _uiState.value.timeOptions.filter { it != event.timeOptionItem }
+                val jsonString = Json.encodeToString(updatedTimeOptions)
+                sharedPreferences.edit().putString("time_options", jsonString).apply()
+                _uiState.value = _uiState.value.copy(timeOptions = updatedTimeOptions, itemInDeleteMode = null)
+            }
+            is TimeSelectionEvent.OnCancelDelete -> {
+                _uiState.value = _uiState.value.copy(itemInDeleteMode = null)
+            }
+            is TimeSelectionEvent.ShowEasterEgg -> {
+                viewModelScope.launch {
+                    _uiState.value = _uiState.value.copy(showEasterEgg = true)
+                    delay(2000)
+                    _uiState.value = _uiState.value.copy(showEasterEgg = false)
+                }
             }
         }
     }
