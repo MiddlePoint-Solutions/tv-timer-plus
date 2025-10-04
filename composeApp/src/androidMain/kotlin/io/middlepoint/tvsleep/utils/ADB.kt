@@ -327,6 +327,9 @@ class ADB(
     private fun isMobileDataAlwaysOnEnabled() = Settings.Global.getInt(context.contentResolver, "mobile_data_always_on", 0) == 1
 
     fun goToSleep() {
+        // TODO: set delay between calls to make sure that we do indeed power off or sleep the device.
+//        sendToShellProcess("reboot -p")
+//        sendToShellProcess("input keyevent KEYCODE_SLEEP")
         sendToShellProcess("input keyevent KEYCODE_POWER")
     }
 

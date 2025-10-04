@@ -41,6 +41,7 @@ import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
+import io.middlepoint.tvsleep.BuildConfig
 import io.middlepoint.tvsleep.R
 import io.middlepoint.tvsleep.ui.theme.TVsleepTheme
 
@@ -110,6 +111,18 @@ private fun TimerSetup(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 userScrollEnabled = true,
             ) {
+                if (BuildConfig.DEBUG) {
+                    item {
+                        TimeOption(
+                            time = "DEBUG",
+                            isInDeleteMode = false,
+                            isEasterEgg = showEasterEgg,
+                            onClick = { onEvent(TimeSelectionEvent.OnTimeSelected(debugTimeOption)) },
+                            onLongClick = { onEvent(TimeSelectionEvent.ShowEasterEgg) },
+                        )
+                    }
+                }
+
                 items(timeOptions, key = { it.time }) { item ->
                     val isInDeleteMode = itemInDeleteMode == item
                     TimeOption(
@@ -193,6 +206,7 @@ private fun TimeOption(
                             textAlign = TextAlign.Center,
                         )
                     }
+
                     TimeOptionContentState.Delete -> {
                         Icon(
                             imageVector = Icons.Default.Delete,
@@ -200,6 +214,7 @@ private fun TimeOption(
                             modifier = Modifier.size(48.dp),
                         )
                     }
+
                     TimeOptionContentState.EasterEgg -> {
                         Icon(
                             imageVector = Icons.Default.SentimentVerySatisfied,

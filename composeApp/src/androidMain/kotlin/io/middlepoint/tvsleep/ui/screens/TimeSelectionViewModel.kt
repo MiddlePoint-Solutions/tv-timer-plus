@@ -11,18 +11,33 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.time.Duration.Companion.minutes
 
 sealed class TimeSelectionEvent {
-    data class OnTimeSelected(val timeOptionItem: TimeOptionItem) : TimeSelectionEvent()
+    data class OnTimeSelected(
+        val timeOptionItem: TimeOptionItem,
+    ) : TimeSelectionEvent()
+
     object ShowCustomTimeDialog : TimeSelectionEvent()
+
     object HideCustomTimeDialog : TimeSelectionEvent()
-    data class SaveCustomTime(val timeInMinutes: String, val label: String) : TimeSelectionEvent()
-    data class OnTimeItemLongPress(val timeOptionItem: TimeOptionItem) : TimeSelectionEvent()
-    data class OnDeleteItem(val timeOptionItem: TimeOptionItem) : TimeSelectionEvent()
+
+    data class SaveCustomTime(
+        val timeInMinutes: String,
+        val label: String,
+    ) : TimeSelectionEvent()
+
+    data class OnTimeItemLongPress(
+        val timeOptionItem: TimeOptionItem,
+    ) : TimeSelectionEvent()
+
+    data class OnDeleteItem(
+        val timeOptionItem: TimeOptionItem,
+    ) : TimeSelectionEvent()
+
     object OnCancelDelete : TimeSelectionEvent()
+
     object ShowEasterEgg : TimeSelectionEvent()
 }
 
@@ -30,10 +45,12 @@ data class TimeSelectionState(
     val timeOptions: List<TimeOptionItem> = emptyList(),
     val showDialog: Boolean = false,
     val itemInDeleteMode: TimeOptionItem? = null,
-    val showEasterEgg: Boolean = false
+    val showEasterEgg: Boolean = false,
 )
 
-class TimeSelectionViewModel(application: Application) : AndroidViewModel(application) {
+class TimeSelectionViewModel(
+    application: Application,
+) : AndroidViewModel(application) {
     private val timeKeeper: TimerController = TimeKeeper.getInstance()
 
     private val _uiState = MutableStateFlow(TimeSelectionState())
@@ -48,14 +65,15 @@ class TimeSelectionViewModel(application: Application) : AndroidViewModel(applic
     private fun loadTimeOptions() {
         viewModelScope.launch {
             val savedTimeOptions = sharedPreferences.getString("time_options", null)
-            val initialTimeOptions = if (savedTimeOptions != null) {
-                Json.decodeFromString<List<TimeOptionItem>>(savedTimeOptions)
-            } else {
-                val defaultTimeOptions = timeOptions
-                val jsonString = Json.encodeToString(defaultTimeOptions)
-                sharedPreferences.edit().putString("time_options", jsonString).apply()
-                defaultTimeOptions
-            }
+            val initialTimeOptions =
+                if (savedTimeOptions != null) {
+                    Json.decodeFromString<List<TimeOptionItem>>(savedTimeOptions)
+                } else {
+                    val defaultTimeOptions = defaultTimeOptions
+                    val jsonString = Json.encodeToString(defaultTimeOptions)
+                    sharedPreferences.edit().putString("time_options", jsonString).apply()
+                    defaultTimeOptions
+                }
             _uiState.value = TimeSelectionState(timeOptions = initialTimeOptions)
         }
     }
@@ -78,11 +96,12 @@ class TimeSelectionViewModel(application: Application) : AndroidViewModel(applic
             is TimeSelectionEvent.SaveCustomTime -> {
                 val timeInMinutes = event.timeInMinutes.toLongOrNull() ?: return
 
-                val newTimeOption = TimeOptionItem(
-                    time = "${timeInMinutes} min",
-                    label = event.label,
-                    timeInMillis = timeInMinutes.minutes.inWholeMilliseconds
-                )
+                val newTimeOption =
+                    TimeOptionItem(
+                        time = "$timeInMinutes min",
+                        label = event.label,
+                        timeInMillis = timeInMinutes.minutes.inWholeMilliseconds,
+                    )
 
                 val updatedTimeOptions = listOf(newTimeOption) + _uiState.value.timeOptions
 
