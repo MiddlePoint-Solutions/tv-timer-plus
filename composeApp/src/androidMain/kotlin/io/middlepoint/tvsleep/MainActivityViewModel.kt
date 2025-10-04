@@ -8,7 +8,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.preference.PreferenceManager
 import co.touchlab.kermit.Logger
 import com.draco.ladb.utils.DnsDiscover
-import io.middlepoint.tvsleep.events.MainActivityViewEvent
 import io.middlepoint.tvsleep.model.AdbState
 import io.middlepoint.tvsleep.model.HomeState
 import io.middlepoint.tvsleep.model.mapToHomeState
@@ -84,14 +83,6 @@ class MainActivityViewModel(
         val isActive =
             timerControllerState !is TimerState.Stopped && timerControllerState !is TimerState.Finished
         return adbState.mapToHomeState(isTimerActive = isActive)
-    }
-
-    fun onEvent(event: MainActivityViewEvent) {
-        when (event) {
-            is MainActivityViewEvent.OnTimeSelected -> {
-                timeKeeper.selectTime(event.timeOptionItem)
-            }
-        }
     }
 
     fun startADBServer(callback: ((Boolean) -> (Unit))? = null) {

@@ -23,27 +23,28 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.tv.material3.Card
 import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
+import io.middlepoint.tvsleep.BuildConfig
 import io.middlepoint.tvsleep.R
-import io.middlepoint.tvsleep.events.MainActivityViewEvent
 import io.middlepoint.tvsleep.ui.theme.TVsleepTheme
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun TimeSelectionScreen(
     modifier: Modifier = Modifier,
-    onEvent: (MainActivityViewEvent) -> Unit,
+    viewModel: TimeSelectionViewModel = viewModel(),
 ) {
     TimerSetup(
         modifier =
             modifier
                 .fillMaxSize()
                 .padding(20.dp),
-        onClick = { onEvent(MainActivityViewEvent.OnTimeSelected(it)) },
+        onClick = { viewModel.onEvent(TimeSelectionEvent.OnTimeSelected(it)) },
     )
 }
 
@@ -80,6 +81,15 @@ private fun TimerSetup(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 userScrollEnabled = true,
             ) {
+                if (BuildConfig.DEBUG) {
+                    item {
+                        TimeOption(
+                            time = debugTimeOption.time,
+                            onClick = { onClick(debugTimeOption) },
+                        )
+                    }
+                }
+
                 items(timeOptions, key = { it.time }) { item ->
                     TimeOption(
                         time = item.time,
