@@ -29,20 +29,21 @@ import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import io.middlepoint.tvsleep.R
+import io.middlepoint.tvsleep.events.MainActivityViewEvent
 import io.middlepoint.tvsleep.ui.theme.TVsleepTheme
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun TimeSelectionScreen(
     modifier: Modifier = Modifier,
-    onTimeSelected: (TimeOptionItem) -> Unit,
+    onEvent: (MainActivityViewEvent) -> Unit,
 ) {
     TimerSetup(
         modifier =
             modifier
                 .fillMaxSize()
                 .padding(20.dp),
-        onClick = onTimeSelected,
+        onClick = { onEvent(MainActivityViewEvent.OnTimeSelected(it)) },
     )
 }
 
