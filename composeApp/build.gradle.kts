@@ -42,9 +42,9 @@ kotlin {
             implementation(compose.material3)
             implementation(compose.ui)
             implementation(libs.compose.ui.util)
-            implementation(libs.compose.ui.tooling)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
+//            implementation(libs.compose.ui.tooling)
             implementation(libs.constraintlayout.compose.multiplatform)
 
             implementation(libs.androidx.navigation.compose)
