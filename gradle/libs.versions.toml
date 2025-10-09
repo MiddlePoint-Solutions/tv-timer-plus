@@ -3,7 +3,6 @@ agp = "8.13.0"
 kotlin = "2.2.20"
 coreKtx = "1.17.0"
 appcompat = "1.7.1"
-composeBom = "2025.09.00"
 compose = "1.9.0"
 ktlintVersion = "0.4.27"
 tvFoundation = "1.0.0-alpha12"
@@ -11,29 +10,23 @@ tvMaterial = "1.0.1"
 materialIcons = "1.7.8"
 androidx-lifecycle = "2.9.4"
 activityCompose = "1.11.0"
-navigationCompose = "2.9.4"
 androidx-navigation-compose= "2.9.0"
 ktor = "3.3.0"
-dadb = "1.2.10"
 kermit = "2.0.8"
 ktlint = "13.1.0"
-constraintlayout = "1.1.1"
 preferenceKtx = "1.2.1"
 splash-screen ="1.0.1"
-lifecycleProcess = "2.8.3"
-lifecycleProcessVersion = "2.9.3"
+lifecycleProcessVersion = "2.9.4"
 smoothMotion= "1.0.1"
 constraintlayout-compose-multiplatform= "0.6.1"
 nodeJs= "7.1.0"
-kotlinx-serialization = "1.6.3"
+kotlinx-serialization = "1.9.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
-androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 androidx-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
-androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
@@ -41,13 +34,12 @@ androidx-tv-foundation = { group = "androidx.tv", name = "tv-foundation", versio
 androidx-tv-material = { group = "androidx.tv", name = "tv-material", version.ref = "tvMaterial" }
 androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "materialIcons" }
 androidx-lifecycle-viewmodel = { module = "androidx.lifecycle:lifecycle-runtime", version.ref = "androidx-lifecycle" }
-androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "constraintlayout" }
 constraintlayout-compose-multiplatform = { group = "tech.annexflow.compose", name = "constraintlayout-compose-multiplatform", version.ref = "constraintlayout-compose-multiplatform" }
+
 
 androidx-navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "androidx-navigation-compose" }
 
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
-#androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 androidx-splash = { module = "androidx.core:core-splashscreen", version.ref = "splash-screen" }
 kermit = { group = "co.touchlab", name = "kermit", version.ref = "kermit" }
 androidx-preference-ktx = { group = "androidx.preference", name = "preference-ktx", version.ref = "preferenceKtx" }
@@ -55,6 +47,7 @@ ktlint = { module = "io.nlpez.compose.rules:ktlint", version.ref = "ktlintVersio
 smoothmotion = { group = "com.github.abdullahalhakimi", name = "SmoothMotion", version.ref = "smoothMotion" }
 
 compose-ui-util = { module = "org.jetbrains.compose.ui:ui-util", version.ref = "compose" }
+compose-ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose" }
 
 # ktor
 ktor-server-core = { group = "io.ktor", name = "ktor-server-core-jvm", version.ref = "ktor" }

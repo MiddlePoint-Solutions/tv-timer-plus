@@ -45,6 +45,8 @@ class ADB(
             }
     }
 
+    private val adbScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
     private val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context)
 
     private val adbPath = "${context.applicationInfo.nativeLibraryDir}/libadb.so"
@@ -327,10 +329,14 @@ class ADB(
     private fun isMobileDataAlwaysOnEnabled() = Settings.Global.getInt(context.contentResolver, "mobile_data_always_on", 0) == 1
 
     fun goToSleep() {
-        // TODO: set delay between calls to make sure that we do indeed power off or sleep the device.
-//        sendToShellProcess("reboot -p")
-//        sendToShellProcess("input keyevent KEYCODE_SLEEP")
-        sendToShellProcess("input keyevent KEYCODE_POWER")
+        adbScope.launch {
+            sendToShellProcess("input keyevent KEYCODE_SLEEP")
+            // TODO: User settings to control what command gets sent to adb.
+//            delay(5000)
+//            sendToShellProcess("input keyevent KEYCODE_POWER")
+//            delay(5000)
+//            sendToShellProcess("reboot -p")
+        }
     }
 
     /**

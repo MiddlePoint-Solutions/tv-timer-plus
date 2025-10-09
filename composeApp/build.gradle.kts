@@ -42,6 +42,7 @@ kotlin {
             implementation(compose.material3)
             implementation(compose.ui)
             implementation(libs.compose.ui.util)
+            implementation(libs.compose.ui.tooling)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
             implementation(libs.constraintlayout.compose.multiplatform)
@@ -49,6 +50,7 @@ kotlin {
             implementation(libs.androidx.navigation.compose)
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.kermit)
         }
 
         androidMain.dependencies {
@@ -61,11 +63,11 @@ kotlin {
             implementation(libs.androidx.tv.material)
             implementation(libs.androidx.material.icons.extended)
             implementation(libs.androidx.activity.compose)
+            implementation(libs.androidx.ui.tooling.preview)
 
             implementation(libs.androidx.splash)
 
             implementation(libs.smoothmotion)
-            implementation(libs.kermit)
             implementation(libs.androidx.preference.ktx)
             implementation(libs.androidx.lifecycle.process)
 

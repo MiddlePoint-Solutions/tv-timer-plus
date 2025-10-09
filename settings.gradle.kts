@@ -23,5 +23,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "TVsleep"
+rootProject.name = "TV Timer+"
 include(":composeApp")

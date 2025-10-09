@@ -66,7 +66,7 @@ fun SetupScreen(modifier: Modifier = Modifier) {
 
             Text(
                 text = @Suppress("ktlint:standard:max-line-length")
-                "For best results enable USB debugging.\nIf unsure please watch YouTube video with instructions.",
+                "For best results enable USB and WiFi debugging.\nIf unsure please watch YouTube video with instructions.",
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onPrimary,
             )
