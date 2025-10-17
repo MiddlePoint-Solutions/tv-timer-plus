@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
+import androidx.core.content.edit
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.preference.PreferenceManager
@@ -84,6 +85,21 @@ class TimeSelectionViewModel(
         loadTimeOptions()
     }
 
+    fun onEvent(event: TimeSelectionEvent) {
+        when (event) {
+            is TimeSelectionEvent.OnTimeSelected -> onTimeSelected(event)
+            is TimeSelectionEvent.OnAppSelected -> onAppSelected(event)
+            is TimeSelectionEvent.OnBackFromAppSelection -> onBackFromAppSelection()
+            is TimeSelectionEvent.ShowCustomTimeDialog -> showCustomTimeDialog()
+            is TimeSelectionEvent.HideCustomTimeDialog -> hideCustomTimeDialog()
+            is TimeSelectionEvent.SaveCustomTime -> saveCustomTime(event)
+            is TimeSelectionEvent.OnTimeItemLongPress -> onTimeItemLongPress(event)
+            is TimeSelectionEvent.OnDeleteItem -> onDeleteItem(event)
+            is TimeSelectionEvent.OnCancelDelete -> onCancelDelete()
+            is TimeSelectionEvent.ShowEasterEgg -> showEasterEgg()
+        }
+    }
+
     private fun getInstalledApps(): List<AppInfo> {
         val pm: PackageManager = getApplication<Application>().packageManager
         val mainIntent = Intent(Intent.ACTION_MAIN, null)
@@ -107,71 +123,84 @@ class TimeSelectionViewModel(
                 } else {
                     val defaultTimeOptions = defaultTimeOptions
                     val jsonString = Json.encodeToString(defaultTimeOptions)
-                    sharedPreferences.edit().putString("time_options", jsonString).apply()
+                    sharedPreferences.edit { putString("time_options", jsonString) }
                     defaultTimeOptions
                 }
             _uiState.value = TimeSelectionState(timeOptions = initialTimeOptions)
         }
     }
 
-    fun onEvent(event: TimeSelectionEvent) {
-        when (event) {
-            is TimeSelectionEvent.OnTimeSelected -> {
-                if (_uiState.value.itemInDeleteMode != null) {
-                    onEvent(TimeSelectionEvent.OnCancelDelete)
-                } else {
-                    timeKeeper.selectTime(event.timeOptionItem)
-                    _uiState.value = _uiState.value.copy(selectionMode = SelectionMode.App, installedApps = getInstalledApps())
-                }
-            }
-            is TimeSelectionEvent.OnAppSelected -> {
-                timeKeeper.selectApp(event.appInfo.packageName)
-            }
-            is TimeSelectionEvent.OnBackFromAppSelection -> {
-                _uiState.value = _uiState.value.copy(selectionMode = SelectionMode.Time)
-            }
-            is TimeSelectionEvent.ShowCustomTimeDialog -> {
-                _uiState.value = _uiState.value.copy(showDialog = true, itemInDeleteMode = null)
-            }
-            is TimeSelectionEvent.HideCustomTimeDialog -> {
-                _uiState.value = _uiState.value.copy(showDialog = false)
-            }
-            is TimeSelectionEvent.SaveCustomTime -> {
-                val timeInMinutes = event.timeInMinutes.toLongOrNull() ?: return
+    private fun onTimeSelected(event: TimeSelectionEvent.OnTimeSelected) {
+        if (_uiState.value.itemInDeleteMode != null) {
+            onCancelDelete()
+        } else {
+            timeKeeper.selectTime(event.timeOptionItem)
+            _uiState.value = _uiState.value.copy(selectionMode = SelectionMode.App, installedApps = getInstalledApps())
+        }
+    }
 
-                val newTimeOption =
-                    TimeOptionItem(
-                        time = "$timeInMinutes min",
-                        label = event.label,
-                        timeInMillis = timeInMinutes.minutes.inWholeMilliseconds,
-                    )
+    private fun onAppSelected(event: TimeSelectionEvent.OnAppSelected) {
+        timeKeeper.selectApp(event.appInfo.packageName)
+        viewModelScope.launch {
+            delay(500L)
+            val launchIntent = getApplication<Application>().packageManager.getLaunchIntentForPackage(event.appInfo.packageName)
+            launchIntent?.let {
+                it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                getApplication<Application>().startActivity(it)
+            }
+        }
+    }
 
-                val updatedTimeOptions = listOf(newTimeOption) + _uiState.value.timeOptions
+    private fun onBackFromAppSelection() {
+        _uiState.value = _uiState.value.copy(selectionMode = SelectionMode.Time)
+    }
 
-                val jsonString = Json.encodeToString(updatedTimeOptions)
-                sharedPreferences.edit().putString("time_options", jsonString).apply()
+    private fun showCustomTimeDialog() {
+        _uiState.value = _uiState.value.copy(showDialog = true, itemInDeleteMode = null)
+    }
 
-                _uiState.value = _uiState.value.copy(timeOptions = updatedTimeOptions, showDialog = false)
-            }
-            is TimeSelectionEvent.OnTimeItemLongPress -> {
-                _uiState.value = _uiState.value.copy(itemInDeleteMode = event.timeOptionItem)
-            }
-            is TimeSelectionEvent.OnDeleteItem -> {
-                val updatedTimeOptions = _uiState.value.timeOptions.filter { it != event.timeOptionItem }
-                val jsonString = Json.encodeToString(updatedTimeOptions)
-                sharedPreferences.edit().putString("time_options", jsonString).apply()
-                _uiState.value = _uiState.value.copy(timeOptions = updatedTimeOptions, itemInDeleteMode = null)
-            }
-            is TimeSelectionEvent.OnCancelDelete -> {
-                _uiState.value = _uiState.value.copy(itemInDeleteMode = null)
-            }
-            is TimeSelectionEvent.ShowEasterEgg -> {
-                viewModelScope.launch {
-                    _uiState.value = _uiState.value.copy(showEasterEgg = true)
-                    delay(2000)
-                    _uiState.value = _uiState.value.copy(showEasterEgg = false)
-                }
-            }
+    private fun hideCustomTimeDialog() {
+        _uiState.value = _uiState.value.copy(showDialog = false)
+    }
+
+    private fun saveCustomTime(event: TimeSelectionEvent.SaveCustomTime) {
+        val timeInMinutes = event.timeInMinutes.toLongOrNull() ?: return
+
+        val newTimeOption =
+            TimeOptionItem(
+                time = "$timeInMinutes min",
+                label = event.label,
+                timeInMillis = timeInMinutes.minutes.inWholeMilliseconds,
+            )
+
+        val updatedTimeOptions = listOf(newTimeOption) + _uiState.value.timeOptions
+
+        val jsonString = Json.encodeToString(updatedTimeOptions)
+        sharedPreferences.edit { putString("time_options", jsonString) }
+
+        _uiState.value = _uiState.value.copy(timeOptions = updatedTimeOptions, showDialog = false)
+    }
+
+    private fun onTimeItemLongPress(event: TimeSelectionEvent.OnTimeItemLongPress) {
+        _uiState.value = _uiState.value.copy(itemInDeleteMode = event.timeOptionItem)
+    }
+
+    private fun onDeleteItem(event: TimeSelectionEvent.OnDeleteItem) {
+        val updatedTimeOptions = _uiState.value.timeOptions.filter { it != event.timeOptionItem }
+        val jsonString = Json.encodeToString(updatedTimeOptions)
+        sharedPreferences.edit { putString("time_options", jsonString) }
+        _uiState.value = _uiState.value.copy(timeOptions = updatedTimeOptions, itemInDeleteMode = null)
+    }
+
+    private fun onCancelDelete() {
+        _uiState.value = _uiState.value.copy(itemInDeleteMode = null)
+    }
+
+    private fun showEasterEgg() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(showEasterEgg = true)
+            delay(2000)
+            _uiState.value = _uiState.value.copy(showEasterEgg = false)
         }
     }
 }
