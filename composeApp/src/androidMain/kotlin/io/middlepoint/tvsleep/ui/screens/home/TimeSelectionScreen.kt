@@ -1,4 +1,4 @@
-package io.middlepoint.tvsleep.ui.screens
+package io.middlepoint.tvsleep.ui.screens.home
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
@@ -44,7 +44,7 @@ import androidx.tv.material3.Text
 import coil.compose.rememberAsyncImagePainter
 import io.middlepoint.tvsleep.BuildConfig
 import io.middlepoint.tvsleep.R
-import io.middlepoint.tvsleep.ui.screens.home.debugTimeOption
+import io.middlepoint.tvsleep.ui.screens.CustomTimeDialog
 import io.middlepoint.tvsleep.ui.theme.TVsleepTheme
 
 @OptIn(ExperimentalTvMaterial3Api::class)

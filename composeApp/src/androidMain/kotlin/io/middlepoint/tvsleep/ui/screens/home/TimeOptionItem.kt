@@ -1,4 +1,4 @@
-package io.middlepoint.tvsleep.ui.screens
+package io.middlepoint.tvsleep.ui.screens.home
 
 import kotlinx.serialization.Serializable
 import kotlin.time.Duration.Companion.hours

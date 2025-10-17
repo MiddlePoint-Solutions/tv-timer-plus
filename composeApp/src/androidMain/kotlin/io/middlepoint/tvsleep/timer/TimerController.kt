@@ -1,7 +1,7 @@
 package io.middlepoint.tvsleep.timer
 
 import io.middlepoint.tvsleep.TimerState
-import io.middlepoint.tvsleep.ui.screens.TimeOptionItem
+import io.middlepoint.tvsleep.ui.screens.home.TimeOptionItem
 import kotlinx.coroutines.flow.StateFlow
 
 interface TimerController {

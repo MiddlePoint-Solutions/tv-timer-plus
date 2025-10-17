@@ -5,7 +5,7 @@ import io.middlepoint.tvsleep.ONE_THOUSAND_INT
 import io.middlepoint.tvsleep.TimerState
 import io.middlepoint.tvsleep.ZERO_LONG
 import io.middlepoint.tvsleep.toHhMmSs
-import io.middlepoint.tvsleep.ui.screens.TimeOptionItem
+import io.middlepoint.tvsleep.ui.screens.home.TimeOptionItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope

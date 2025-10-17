@@ -1,17 +1,14 @@
-package io.middlepoint.tvsleep.ui.screens
+package io.middlepoint.tvsleep.ui.screens.home
 
 import android.app.Application
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.drawable.Drawable
 import androidx.core.content.edit
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.preference.PreferenceManager
 import io.middlepoint.tvsleep.timer.TimeKeeper
 import io.middlepoint.tvsleep.timer.TimerController
-import io.middlepoint.tvsleep.ui.screens.home.TimeOptionItem
-import io.middlepoint.tvsleep.ui.screens.home.defaultTimeOptions
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,59 +16,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import kotlin.time.Duration.Companion.minutes
-
-sealed class TimeSelectionEvent {
-    data class OnTimeSelected(
-        val timeOptionItem: TimeOptionItem,
-    ) : TimeSelectionEvent()
-
-    data class OnAppSelected(
-        val appInfo: AppInfo,
-    ) : TimeSelectionEvent()
-
-    object OnBackFromAppSelection : TimeSelectionEvent()
-
-    object ShowCustomTimeDialog : TimeSelectionEvent()
-
-    object HideCustomTimeDialog : TimeSelectionEvent()
-
-    data class SaveCustomTime(
-        val timeInMinutes: String,
-        val label: String,
-    ) : TimeSelectionEvent()
-
-    data class OnTimeItemLongPress(
-        val timeOptionItem: TimeOptionItem,
-    ) : TimeSelectionEvent()
-
-    data class OnDeleteItem(
-        val timeOptionItem: TimeOptionItem,
-    ) : TimeSelectionEvent()
-
-    object OnCancelDelete : TimeSelectionEvent()
-
-    object ShowEasterEgg : TimeSelectionEvent()
-}
-
-data class AppInfo(
-    val packageName: String,
-    val label: String,
-    val icon: Drawable?
-)
-
-enum class SelectionMode {
-    Time,
-    App,
-}
-
-data class TimeSelectionState(
-    val timeOptions: List<TimeOptionItem> = emptyList(),
-    val showDialog: Boolean = false,
-    val itemInDeleteMode: TimeOptionItem? = null,
-    val showEasterEgg: Boolean = false,
-    val selectionMode: SelectionMode = SelectionMode.Time,
-    val installedApps: List<AppInfo> = emptyList(),
-)
 
 class TimeSelectionViewModel(
     application: Application,
