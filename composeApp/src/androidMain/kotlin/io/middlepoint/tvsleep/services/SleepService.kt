@@ -31,13 +31,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationCompat
 import androidx.tv.material3.MaterialTheme
 import co.touchlab.kermit.Logger
 import io.middlepoint.tvsleep.R
 import io.middlepoint.tvsleep.TimerState
-import io.middlepoint.tvsleep.services.ComposeLifecycleOwner
 import io.middlepoint.tvsleep.timer.TimeKeeper
 import io.middlepoint.tvsleep.ui.components.MainTimer
 import io.middlepoint.tvsleep.utils.ADB
@@ -153,9 +153,10 @@ class SleepService : Service() {
                                 animatedProgress = animatedProgress,
                                 formattedTime = timerLabel,
                                 timerScreenState = timerScreenState,
+                                image = painterResource(id = R.mipmap.ic_timer_logo),
                                 modifier =
                                     Modifier
-                                        .size(200.dp) // MainTimer has a defined size
+                                        .size(160.dp) // MainTimer has a defined size
                                         .background(MaterialTheme.colorScheme.primary, CircleShape)
                                         .clipToBounds()
                                         .padding(8.dp),

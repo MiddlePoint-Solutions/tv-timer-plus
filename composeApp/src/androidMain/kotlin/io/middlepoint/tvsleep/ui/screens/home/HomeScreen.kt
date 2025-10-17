@@ -49,9 +49,9 @@ import io.middlepoint.tvsleep.ui.theme.TVsleepTheme
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-fun TimeSelectionScreen(
+fun HomeScreen(
     modifier: Modifier = Modifier,
-    viewModel: TimeSelectionViewModel = viewModel(),
+    viewModel: HomeViewModel = viewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
 

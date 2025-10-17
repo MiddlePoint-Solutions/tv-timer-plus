@@ -33,7 +33,7 @@ import io.middlepoint.tvsleep.ui.screens.DebugScreen
 import io.middlepoint.tvsleep.ui.screens.SetupADB
 import io.middlepoint.tvsleep.ui.screens.SetupScreen
 import io.middlepoint.tvsleep.ui.screens.TimeSelection
-import io.middlepoint.tvsleep.ui.screens.home.TimeSelectionScreen
+import io.middlepoint.tvsleep.ui.screens.home.HomeScreen
 import io.middlepoint.tvsleep.ui.screens.Timer
 import io.middlepoint.tvsleep.ui.screens.timer.TimerScreen
 import io.middlepoint.tvsleep.ui.screens.mapToScreen
@@ -75,7 +75,7 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable<TimeSelection> {
-                            TimeSelectionScreen()
+                            HomeScreen()
                         }
                         composable<Timer> {
                             TimerScreen()

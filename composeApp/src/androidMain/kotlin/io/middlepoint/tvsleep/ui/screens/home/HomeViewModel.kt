@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import kotlin.time.Duration.Companion.minutes
 
-class TimeSelectionViewModel(
+class HomeViewModel(
     application: Application,
 ) : AndroidViewModel(application) {
     private val timeKeeper: TimerController = TimeKeeper.getInstance()
