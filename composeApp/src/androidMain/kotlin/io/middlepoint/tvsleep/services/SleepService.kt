@@ -21,7 +21,10 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -52,216 +55,243 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class SleepService : Service() {
-    private val logger = Logger.withTag("SleepService")
-    private lateinit var timeKeeper: TimeKeeper
-    private lateinit var adb: ADB
-    private lateinit var wm: WindowManager
-    private lateinit var overlayView: View
-    private var composeView: ComposeView? = null
-    private var composeOwner: ComposeLifecycleOwner? = null
-    private lateinit var params: WindowManager.LayoutParams
+  private val logger = Logger.withTag("SleepService")
+  private lateinit var timeKeeper: TimeKeeper
+  private lateinit var adb: ADB
+  private lateinit var wm: WindowManager
+  private lateinit var overlayView: View
+  private var composeView: ComposeView? = null
+  private var composeOwner: ComposeLifecycleOwner? = null
+  private lateinit var params: WindowManager.LayoutParams
 
-    private val overlayVisibleStateFlow = MutableStateFlow(false)
+  private val overlayVisibleStateFlow = MutableStateFlow(false)
 
-    private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
-    private var autoHideJob: Job? = null
+  private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+  private var autoHideJob: Job? = null
 
-    private var isForegroundServiceStarted = false
+  private var isForegroundServiceStarted = false
 
-    companion object {
-        private const val NOTIFICATION_ID = 1
-        private const val AUTO_HIDE_DELAY_MS = 10_000L
+  companion object {
+    private const val NOTIFICATION_ID = 1
+    private const val AUTO_HIDE_DELAY_MS = 10_000L
 
-        const val ACTION_SHOW_OVERLAY = "io.middlepoint.tvsleep.services.SHOW_OVERLAY"
-        const val ACTION_HIDE_OVERLAY = "io.middlepoint.tvsleep.services.HIDE_OVERLAY"
+    const val ACTION_SHOW_OVERLAY = "io.middlepoint.tvsleep.services.SHOW_OVERLAY"
+    const val ACTION_HIDE_OVERLAY = "io.middlepoint.tvsleep.services.HIDE_OVERLAY"
+  }
+
+  override fun onCreate() {
+    super.onCreate()
+
+    logger.d("onCreate")
+    if (!Settings.canDrawOverlays(this)) {
+      logger.w("Cannot draw overlays, stopping service.")
+      stopSelf()
+      return
     }
 
-    override fun onCreate() {
-        super.onCreate()
+    logger.d("onCreate - Settings.canDrawOverlays(this) is true")
 
-        logger.d("onCreate")
-        if (!Settings.canDrawOverlays(this)) {
-            logger.w("Cannot draw overlays, stopping service.")
-            stopSelf()
-            return
+    timeKeeper = TimeKeeper.getInstance()
+    adb = ADB.getInstance(this)
+
+    observeTimerState()
+    observeFinalMinute()
+
+    wm = getSystemService(WINDOW_SERVICE) as WindowManager
+    overlayView =
+      LayoutInflater
+        .from(this)
+        .inflate(R.layout.view_overlay, FrameLayout(this), false)
+
+    val type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+    params =
+      WindowManager
+        .LayoutParams(
+          WindowManager.LayoutParams.WRAP_CONTENT,
+          WindowManager.LayoutParams.WRAP_CONTENT,
+          type,
+          WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                  WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                  WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+          PixelFormat.TRANSLUCENT,
+        ).apply {
+          gravity = Gravity.TOP or Gravity.START
+          x = 40
+          y = 40
         }
 
-        logger.d("onCreate - Settings.canDrawOverlays(this) is true")
+    wm.addView(overlayView, params)
+    logger.d("OverlayView added to WindowManager")
 
-        timeKeeper = TimeKeeper.getInstance()
-        adb = ADB.getInstance(this)
+    composeOwner = ComposeLifecycleOwner()
+    composeOwner?.attachToDecorView(overlayView)
 
-        observeTimerState()
+    composeView =
+      ComposeView(this).apply {
+        setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
+        setContent {
+          val overlayVisible by overlayVisibleStateFlow.collectAsState()
 
-        wm = getSystemService(WINDOW_SERVICE) as WindowManager
-        overlayView =
-            LayoutInflater
-                .from(this)
-                .inflate(R.layout.view_overlay, FrameLayout(this), false)
+          AnimatedVisibility(
+            visible = overlayVisible,
+            enter = fadeIn(tween(700)),
+            exit = fadeOut(tween(1000)),
+          ) {
+            MaterialTheme {
+              val timerLabel by timeKeeper.timerLabel.collectAsState()
+              val timerScreenState by timeKeeper.timerState.collectAsState() // Keep this for MainTimer
+              val timerProgressOffset by timeKeeper.timerProgressOffset.collectAsState()
 
-        val type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-        params =
-            WindowManager
-                .LayoutParams(
-                    WindowManager.LayoutParams.WRAP_CONTENT,
-                    WindowManager.LayoutParams.WRAP_CONTENT,
-                    type,
-                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                        WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
-                        WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-                    PixelFormat.TRANSLUCENT,
-                ).apply {
-                    gravity = Gravity.TOP or Gravity.START
-                    x = 40
-                    y = 40
-                }
+              val animatedProgress by animateFloatAsState(
+                targetValue = timerProgressOffset,
+                animationSpec =
+                  SpringSpec(
+                    dampingRatio = Spring.DampingRatioNoBouncy,
+                    stiffness = Spring.StiffnessVeryLow,
+                    visibilityThreshold = 1 / 1000f,
+                  ),
+                label = "TimerProgressAnimation",
+              )
 
-        wm.addView(overlayView, params)
-        logger.d("OverlayView added to WindowManager")
+              Row {
+                MainTimer(
+                  animatedProgress = animatedProgress,
+                  formattedTime = timerLabel,
+                  timerScreenState = timerScreenState,
+                  modifier =
+                    Modifier
+                      .size(160.dp) // MainTimer has a defined size
+                      .background(
+                        MaterialTheme.colorScheme.primary,
+                        CircleShape
+                      )
+                      .clipToBounds()
+                      .padding(8.dp),
+                )
 
-        composeOwner = ComposeLifecycleOwner()
-        composeOwner?.attachToDecorView(overlayView)
-
-        composeView =
-            ComposeView(this).apply {
-                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
-                setContent {
-                    val overlayVisible by overlayVisibleStateFlow.collectAsState()
-
-                    AnimatedVisibility(
-                        visible = overlayVisible,
-                        enter = fadeIn(tween(700)),
-                        exit = fadeOut(tween(1000)),
-                    ) {
-                        MaterialTheme {
-                            val timerLabel by timeKeeper.timerLabel.collectAsState()
-                            val timerScreenState by timeKeeper.timerState.collectAsState() // Keep this for MainTimer
-                            val timerProgressOffset by timeKeeper.timerProgressOffset.collectAsState()
-
-                            val animatedProgress by animateFloatAsState(
-                                targetValue = timerProgressOffset,
-                                animationSpec =
-                                    SpringSpec(
-                                        dampingRatio = Spring.DampingRatioNoBouncy,
-                                        stiffness = Spring.StiffnessVeryLow,
-                                        visibilityThreshold = 1 / 1000f,
-                                    ),
-                                label = "TimerProgressAnimation",
-                            )
-
-                            MainTimer(
-                                animatedProgress = animatedProgress,
-                                formattedTime = timerLabel,
-                                timerScreenState = timerScreenState,
-                                image = painterResource(id = R.mipmap.ic_timer_logo),
-                                modifier =
-                                    Modifier
-                                        .size(160.dp) // MainTimer has a defined size
-                                        .background(MaterialTheme.colorScheme.primary, CircleShape)
-                                        .clipToBounds()
-                                        .padding(8.dp),
-                            )
-                        }
-                    }
-                }
+                Image(
+                  painter = painterResource(id = R.mipmap.ic_timer_logo),
+                  contentDescription = "Timer Icon",
+                  modifier = Modifier
+                    .size(58.dp)
+                    .absoluteOffset(x = (-22).dp)
+                )
+              }
             }
-
-        (overlayView as ViewGroup).addView(composeView)
-        logger.d("ComposeView added to overlayView")
-        composeOwner?.onCreate()
-        composeOwner?.onStart()
-        composeOwner?.onResume()
-        logger.d("SleepService onCreate finished")
-    }
-
-    private fun observeTimerState() {
-        serviceScope.launch {
-            timeKeeper.timerState.collectLatest { state ->
-                if (state is TimerState.Finished) {
-                    logger.d("Timer finished. Putting device to sleep.")
-                    try {
-                        adb.goToSleep()
-                    } catch (e: Exception) {
-                        logger.e(e) { "Error putting device to sleep" }
-                    }
-                }
-            }
+          }
         }
-    }
+      }
 
-    override fun onStartCommand(
-        intent: Intent?,
-        flags: Int,
-        startId: Int,
-    ): Int {
-        if (!isForegroundServiceStarted) {
-            startForeground(NOTIFICATION_ID, createNotification())
-            isForegroundServiceStarted = true
+    (overlayView as ViewGroup).addView(composeView)
+    logger.d("ComposeView added to overlayView")
+    composeOwner?.onCreate()
+    composeOwner?.onStart()
+    composeOwner?.onResume()
+    logger.d("SleepService onCreate finished")
+  }
+
+  private fun observeTimerState() {
+    serviceScope.launch {
+      timeKeeper.timerState.collectLatest { state ->
+        if (state is TimerState.Finished) {
+          logger.d("Timer finished. Putting device to sleep.")
+          try {
+            adb.goToSleep()
+          } catch (e: Exception) {
+            logger.e(e) { "Error putting device to sleep" }
+          }
         }
-        logger.d("onStartCommand action: ${intent?.action}")
-        when (intent?.action) {
-            ACTION_SHOW_OVERLAY -> {
-                logger.d("ACTION_SHOW_OVERLAY received")
-                autoHideJob?.cancel()
-                overlayVisibleStateFlow.value = true
-                startAutoHideJob()
-            }
+      }
+    }
+  }
 
-            ACTION_HIDE_OVERLAY -> {
-                logger.d("ACTION_HIDE_OVERLAY received")
-                autoHideJob?.cancel()
-                overlayVisibleStateFlow.value = false
-            }
+  private fun observeFinalMinute() {
+    serviceScope.launch {
+      timeKeeper.isInFinalMinute.collectLatest { isInFinalMinute ->
+        if (isInFinalMinute) {
+          overlayVisibleStateFlow.value = true
+        } else {
+          // Optionally, hide the overlay when not in the final minute,
+          // depending on the desired behavior.
+          // overlayVisibleStateFlow.value = false
         }
-        return START_STICKY
+      }
     }
+  }
 
-    private fun startAutoHideJob() {
-        autoHideJob =
-            serviceScope.launch {
-                delay(AUTO_HIDE_DELAY_MS)
-                overlayVisibleStateFlow.value = false
-                logger.d("Overlay hidden after delay")
-            }
+  override fun onStartCommand(
+    intent: Intent?,
+    flags: Int,
+    startId: Int,
+  ): Int {
+    if (!isForegroundServiceStarted) {
+      startForeground(NOTIFICATION_ID, createNotification())
+      isForegroundServiceStarted = true
     }
-
-    override fun onDestroy() {
-        logger.d("onDestroy started")
+    logger.d("onStartCommand action: ${intent?.action}")
+    when (intent?.action) {
+      ACTION_SHOW_OVERLAY -> {
+        logger.d("ACTION_SHOW_OVERLAY received")
         autoHideJob?.cancel()
-        serviceScope.cancel() // Cancel the scope and all its children
-        composeOwner?.onPause()
-        composeOwner?.onStop()
-        composeOwner?.onDestroy()
-        composeView?.let { cv ->
-            (overlayView as? ViewGroup)?.removeView(cv)
-            runCatching { wm.removeView(overlayView) }
-                .onFailure { logger.e(it) { "Error removing overlayView from WindowManager" } }
-        }
-        composeView = null
-        composeOwner = null
-        super.onDestroy()
-        logger.d("onDestroy finished")
+        overlayVisibleStateFlow.value = true
+        startAutoHideJob()
+      }
+
+      ACTION_HIDE_OVERLAY -> {
+        logger.d("ACTION_HIDE_OVERLAY received")
+        autoHideJob?.cancel()
+        overlayVisibleStateFlow.value = false
+      }
     }
+    return START_STICKY
+  }
 
-    override fun onBind(intent: Intent?): IBinder? = null
+  private fun startAutoHideJob() {
+    autoHideJob =
+      serviceScope.launch {
+        delay(AUTO_HIDE_DELAY_MS)
+        overlayVisibleStateFlow.value = false
+        logger.d("Overlay hidden after delay")
+      }
+  }
 
-    private fun createNotification(): Notification {
-        val channelId = "WebServerServiceChannel"
-        val channelName = "Web Server Service"
-        val chan =
-            NotificationChannel(
-                channelId,
-                channelName,
-                NotificationManager.IMPORTANCE_DEFAULT,
-            )
-        val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        manager.createNotificationChannel(chan)
-
-        return NotificationCompat
-            .Builder(this, channelId)
-            .setContentTitle("TV Sleep Server")
-            .setContentText("Web server is running.")
-            .setSmallIcon(R.mipmap.ic_launcher)
-            .build()
+  override fun onDestroy() {
+    logger.d("onDestroy started")
+    autoHideJob?.cancel()
+    serviceScope.cancel() // Cancel the scope and all its children
+    composeOwner?.onPause()
+    composeOwner?.onStop()
+    composeOwner?.onDestroy()
+    composeView?.let { cv ->
+      (overlayView as? ViewGroup)?.removeView(cv)
+      runCatching { wm.removeView(overlayView) }
+        .onFailure { logger.e(it) { "Error removing overlayView from WindowManager" } }
     }
+    composeView = null
+    composeOwner = null
+    super.onDestroy()
+    logger.d("onDestroy finished")
+  }
+
+  override fun onBind(intent: Intent?): IBinder? = null
+
+  private fun createNotification(): Notification {
+    val channelId = "WebServerServiceChannel"
+    val channelName = "Web Server Service"
+    val chan =
+      NotificationChannel(
+        channelId,
+        channelName,
+        NotificationManager.IMPORTANCE_DEFAULT,
+      )
+    val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+    manager.createNotificationChannel(chan)
+
+    return NotificationCompat
+      .Builder(this, channelId)
+      .setContentTitle("TV Sleep Server")
+      .setContentText("Web server is running.")
+      .setSmallIcon(R.mipmap.ic_launcher)
+      .build()
+  }
 }

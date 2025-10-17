@@ -3,17 +3,14 @@ package io.middlepoint.tvsleep.ui.components
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -27,7 +24,6 @@ fun MainTimer(
     timerScreenState: TimerState,
     formattedTime: String,
     modifier: Modifier = Modifier,
-    image: Painter? = null,
 ) {
     BoxWithConstraints(
         modifier = modifier,
@@ -79,21 +75,6 @@ fun MainTimer(
                     )
                 },
             )
-
-            if (image != null) {
-                Image(
-                    painter = image,
-                    contentDescription = "Timer Icon",
-                    modifier = Modifier
-                        .size(42.dp)
-                        .constrainAs(timerImage) {
-                            top.linkTo(parent.top, margin = 12.dp)
-                            bottom.linkTo(timerText.top)
-                            start.linkTo(parent.start, margin = 12.dp)
-                            end.linkTo(parent.end)
-                        },
-                )
-            }
         }
     }
 }

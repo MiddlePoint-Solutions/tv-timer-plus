@@ -42,6 +42,9 @@ class TimeKeeper private constructor() :
 
     private val _selectedAppPackageName = MutableStateFlow<String?>(null)
     val selectedAppPackageName: StateFlow<String?> = _selectedAppPackageName
+    
+    private val _isInFinalMinute = MutableStateFlow(false)
+    val isInFinalMinute: StateFlow<Boolean> = _isInFinalMinute
 
     private var timerJob: Job? = null
 
@@ -105,6 +108,7 @@ class TimeKeeper private constructor() :
         _selectedTimeOptionLabel.value = ""
         _selectedAppPackageName.value = null
         _currentTimerTotalDuration.value = 0L
+        _isInFinalMinute.value = false
         updateProgressOffset()
     }
 
@@ -166,6 +170,8 @@ class TimeKeeper private constructor() :
                     interval -= period
                     _tick.value = interval
                     updateProgressOffset()
+                    
+                    _isInFinalMinute.value = interval <= 60000L
 
                     if (interval % ONE_THOUSAND_INT == ZERO_LONG || interval == duration) {
                         _timerLabel.value = interval.toHhMmSs()
@@ -178,6 +184,7 @@ class TimeKeeper private constructor() :
                         delay(1000)
                         setTimerState(TimerState.Finished)
                     }
+                    _isInFinalMinute.value = false
                 }
             }
     }
