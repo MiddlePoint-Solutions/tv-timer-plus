@@ -70,7 +70,7 @@ class TimeKeeper private constructor() :
         updateProgressOffset()
     }
 
-    override fun selectApp(packageName: String) {
+    override fun start(packageName: String?) {
         _selectedAppPackageName.value = packageName
         setTimerState(TimerState.Started)
         startTimer(_tick.value)

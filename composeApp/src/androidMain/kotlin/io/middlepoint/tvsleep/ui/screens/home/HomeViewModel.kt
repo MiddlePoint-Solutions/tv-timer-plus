@@ -43,7 +43,12 @@ class HomeViewModel(
             is TimeSelectionEvent.OnDeleteItem -> onDeleteItem(event)
             is TimeSelectionEvent.OnCancelDelete -> onCancelDelete()
             is TimeSelectionEvent.ShowEasterEgg -> showEasterEgg()
+            is TimeSelectionEvent.StartTimerOnly -> startTimerOnly()
         }
+    }
+
+    private fun startTimerOnly() {
+        timeKeeper.start(null)
     }
 
     private fun getInstalledApps(): List<AppInfo> {
@@ -86,7 +91,7 @@ class HomeViewModel(
     }
 
     private fun onAppSelected(event: TimeSelectionEvent.OnAppSelected) {
-        timeKeeper.selectApp(event.appInfo.packageName)
+        timeKeeper.start(event.appInfo.packageName)
         viewModelScope.launch {
             delay(500L)
             val launchIntent = getApplication<Application>().packageManager.getLaunchIntentForPackage(event.appInfo.packageName)
