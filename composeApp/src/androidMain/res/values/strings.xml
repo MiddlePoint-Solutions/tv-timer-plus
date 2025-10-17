@@ -11,6 +11,7 @@
     <string name="label_time_up">Time\'s up</string>
     <string name="label_stop">STOP</string>
     <string name="timer_setup_title">Set Watch Time</string>
+    <string name="app_selection_title">Select an App</string>
     <string name="checking_device_setup">Checking Device Setup</string>
 
     <string name="auto_shell_key">auto_shell</string>

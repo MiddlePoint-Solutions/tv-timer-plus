@@ -64,6 +64,7 @@ kotlin {
             implementation(libs.androidx.material.icons.extended)
             implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.ui.tooling.preview)
+            implementation(libs.coil.compose)
 
             implementation(libs.androidx.splash)
 

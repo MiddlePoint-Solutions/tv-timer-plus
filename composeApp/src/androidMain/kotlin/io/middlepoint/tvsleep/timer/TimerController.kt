@@ -15,6 +15,8 @@ interface TimerController {
 
     fun selectTime(timeOptionItem: TimeOptionItem) // Changed from durationMillis: Long
 
+    fun selectApp(packageName: String)
+
     fun togglePlayPause()
 
     fun stopTimerAndReset()
