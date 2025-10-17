@@ -3,19 +3,23 @@ package io.middlepoint.tvsleep.ui.components
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import io.middlepoint.tvsleep.TimerState
-import io.middlepoint.tvsleep.calculateFontSize
 
 @Composable
 fun MainTimer(
@@ -23,11 +27,22 @@ fun MainTimer(
     timerScreenState: TimerState,
     formattedTime: String,
     modifier: Modifier = Modifier,
+    image: Painter? = null,
 ) {
-    Box(
+    BoxWithConstraints(
         modifier = modifier,
         contentAlignment = Alignment.Center,
     ) {
+
+        val localDensity = LocalDensity.current
+        val fontSize = remember(formattedTime.length, constraints.maxWidth) {
+            with(localDensity) {
+                // Basic heuristic to fit the text in the circle.
+                // The divisor can be tweaked for better visual results.
+                (constraints.maxWidth / (formattedTime.length * 0.5f + 1f)).toSp()
+            }
+        }
+
         AnimatedVisibility(
             visible = timerScreenState != TimerState.Finished,
             enter = fadeIn(),
@@ -44,47 +59,41 @@ fun MainTimer(
         ConstraintLayout(
             modifier = Modifier.fillMaxSize(),
         ) {
-            val (timerText, optionTimerButton) = createRefs()
+            val (timerText, timerImage) = createRefs()
 
             Text(
                 text = formattedTime,
                 style =
-                    MaterialTheme.typography.displaySmall.copy(
-                        fontSize = formattedTime.calculateFontSize(),
-                        fontWeight = FontWeight.Companion.W300,
-                        letterSpacing = 1.sp,
-                    ),
+                MaterialTheme.typography.displaySmall.copy(
+                    fontSize = fontSize,
+                    fontWeight = FontWeight.Companion.W500,
+                    letterSpacing = 1.sp,
+                ),
                 color = MaterialTheme.colorScheme.onPrimary,
-                modifier =
-                    Modifier
-                        .constrainAs(timerText) {
-                            linkTo(
-                                start = parent.start,
-                                top = parent.top,
-                                end = parent.end,
-                                bottom = parent.bottom,
-                            )
-                        },
+                modifier = Modifier.constrainAs(timerText) {
+                    linkTo(
+                        start = parent.start,
+                        top = parent.top,
+                        end = parent.end,
+                        bottom = parent.bottom,
+                    )
+                },
             )
 
-//            Button( // TODO: Replace with label of the timer?
-//                onClick = {},
-//                modifier =
-//                    Modifier.constrainAs(optionTimerButton) {
-//                        linkTo(start = parent.start, end = parent.end)
-//                        bottom.linkTo(parent.bottom, margin = 20.dp)
-//                    },
-//            ) {
-//                Text(
-//                    text = "Fix", // Placeholder text, consider making this dynamic or a resource
-//                    style =
-//                        MaterialTheme.typography.bodyMedium.copy(
-//                            letterSpacing = 0.sp,
-//                            fontWeight = FontWeight.Companion.W400,
-//                        ),
-//                    color = MaterialTheme.colorScheme.onPrimary,
-//                )
-//            }
+            if (image != null) {
+                Image(
+                    painter = image,
+                    contentDescription = "Timer Icon",
+                    modifier = Modifier
+                        .size(42.dp)
+                        .constrainAs(timerImage) {
+                            top.linkTo(parent.top, margin = 12.dp)
+                            bottom.linkTo(timerText.top)
+                            start.linkTo(parent.start, margin = 12.dp)
+                            end.linkTo(parent.end)
+                        },
+                )
+            }
         }
     }
 }

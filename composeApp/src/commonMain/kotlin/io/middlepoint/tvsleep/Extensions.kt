@@ -15,9 +15,6 @@
  */
 package io.middlepoint.tvsleep
 
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.util.fastForEachIndexed
 import kotlin.math.absoluteValue
 
 fun String.fillWithZeros() = this.padStart(MAX_LENGTH_TIMER, ZERO_STRING.first())
@@ -54,11 +51,3 @@ fun Long.toHhMmSs(): String {
     }
     return formattedTime
 }
-
-fun String.calculateFontSize(): TextUnit =
-    when (length) {
-        8 -> 40.sp
-        7 -> 48.sp
-        5 -> 64.sp
-        else -> 72.sp
-    }
