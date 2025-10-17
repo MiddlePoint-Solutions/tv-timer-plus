@@ -33,9 +33,9 @@ import io.middlepoint.tvsleep.ui.screens.DebugScreen
 import io.middlepoint.tvsleep.ui.screens.SetupADB
 import io.middlepoint.tvsleep.ui.screens.SetupScreen
 import io.middlepoint.tvsleep.ui.screens.TimeSelection
-import io.middlepoint.tvsleep.ui.screens.TimeSelectionScreen
+import io.middlepoint.tvsleep.ui.screens.home.TimeSelectionScreen
 import io.middlepoint.tvsleep.ui.screens.Timer
-import io.middlepoint.tvsleep.ui.screens.TimerScreen
+import io.middlepoint.tvsleep.ui.screens.timer.TimerScreen
 import io.middlepoint.tvsleep.ui.screens.mapToScreen
 import io.middlepoint.tvsleep.ui.theme.TVsleepTheme
 
