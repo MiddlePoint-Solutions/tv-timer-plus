@@ -1,6 +1,9 @@
 package io.middlepoint.tvsleep.ui.screens
 
 import android.app.Application
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.drawable.Drawable
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.preference.PreferenceManager
@@ -18,6 +21,12 @@ sealed class TimeSelectionEvent {
     data class OnTimeSelected(
         val timeOptionItem: TimeOptionItem,
     ) : TimeSelectionEvent()
+
+    data class OnAppSelected(
+        val appInfo: AppInfo,
+    ) : TimeSelectionEvent()
+
+    object OnBackFromAppSelection : TimeSelectionEvent()
 
     object ShowCustomTimeDialog : TimeSelectionEvent()
 
@@ -41,11 +50,24 @@ sealed class TimeSelectionEvent {
     object ShowEasterEgg : TimeSelectionEvent()
 }
 
+data class AppInfo(
+    val packageName: String,
+    val label: String,
+    val icon: Drawable?
+)
+
+enum class SelectionMode {
+    Time,
+    App,
+}
+
 data class TimeSelectionState(
     val timeOptions: List<TimeOptionItem> = emptyList(),
     val showDialog: Boolean = false,
     val itemInDeleteMode: TimeOptionItem? = null,
     val showEasterEgg: Boolean = false,
+    val selectionMode: SelectionMode = SelectionMode.Time,
+    val installedApps: List<AppInfo> = emptyList(),
 )
 
 class TimeSelectionViewModel(
@@ -60,6 +82,20 @@ class TimeSelectionViewModel(
 
     init {
         loadTimeOptions()
+    }
+
+    private fun getInstalledApps(): List<AppInfo> {
+        val pm: PackageManager = getApplication<Application>().packageManager
+        val mainIntent = Intent(Intent.ACTION_MAIN, null)
+        mainIntent.addCategory(Intent.CATEGORY_LAUNCHER)
+        val packages = pm.queryIntentActivities(mainIntent, 0)
+        return packages.map {
+            AppInfo(
+                packageName = it.activityInfo.packageName,
+                label = it.loadLabel(pm).toString(),
+                icon = it.loadIcon(pm)
+            )
+        }
     }
 
     private fun loadTimeOptions() {
@@ -85,7 +121,14 @@ class TimeSelectionViewModel(
                     onEvent(TimeSelectionEvent.OnCancelDelete)
                 } else {
                     timeKeeper.selectTime(event.timeOptionItem)
+                    _uiState.value = _uiState.value.copy(selectionMode = SelectionMode.App, installedApps = getInstalledApps())
                 }
+            }
+            is TimeSelectionEvent.OnAppSelected -> {
+                timeKeeper.selectApp(event.appInfo.packageName)
+            }
+            is TimeSelectionEvent.OnBackFromAppSelection -> {
+                _uiState.value = _uiState.value.copy(selectionMode = SelectionMode.Time)
             }
             is TimeSelectionEvent.ShowCustomTimeDialog -> {
                 _uiState.value = _uiState.value.copy(showDialog = true, itemInDeleteMode = null)
