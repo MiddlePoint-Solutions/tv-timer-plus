@@ -12,6 +12,8 @@ sealed class TimeSelectionEvent {
         val appInfo: AppInfo,
     ) : TimeSelectionEvent()
 
+    object StartTimerOnly : TimeSelectionEvent()
+
     object OnBackFromAppSelection : TimeSelectionEvent()
 
     object ShowCustomTimeDialog : TimeSelectionEvent()

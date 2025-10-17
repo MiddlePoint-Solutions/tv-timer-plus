@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.SentimentVerySatisfied
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -32,6 +33,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -72,20 +74,37 @@ fun HomeScreen(
         )
     }
 
-    AnimatedContent(targetState = uiState.selectionMode, label = "Time/App selection") {
-        when (it) {
-            SelectionMode.Time ->
-                TimerSetup(
-                    modifier = modifier.fillMaxSize().padding(20.dp),
-                    state = uiState,
-                    onEvent = viewModel::onEvent,
-                )
-            SelectionMode.App ->
-                AppSelection(
-                    modifier = modifier.fillMaxSize().padding(20.dp),
-                    state = uiState,
-                    onEvent = viewModel::onEvent,
-                )
+    Column(
+        modifier = modifier.fillMaxSize().padding(20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        val title = when (uiState.selectionMode) {
+            SelectionMode.Time -> stringResource(R.string.timer_setup_title)
+            SelectionMode.App -> stringResource(R.string.app_selection_title)
+        }
+
+        Text(
+            text = title,
+            modifier = Modifier.padding(top = 40.dp),
+            style = MaterialTheme.typography.displayLarge,
+        )
+
+        Spacer(modifier = Modifier.size(20.dp))
+
+        AnimatedContent(targetState = uiState.selectionMode, label = "Time/App selection") {
+            when (it) {
+                SelectionMode.Time ->
+                    TimerSetup(
+                        state = uiState,
+                        onEvent = viewModel::onEvent,
+                    )
+
+                SelectionMode.App ->
+                    AppSelection(
+                        state = uiState,
+                        onEvent = viewModel::onEvent,
+                    )
+            }
         }
     }
 }
@@ -93,24 +112,14 @@ fun HomeScreen(
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 private fun AppSelection(
-    modifier: Modifier = Modifier,
     state: TimeSelectionState,
     onEvent: (TimeSelectionEvent) -> Unit,
 ) {
     val focusRequester = remember { FocusRequester() }
-    Column(
-        modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = stringResource(R.string.app_selection_title),
-            modifier = Modifier.padding(top = 40.dp),
-            style = MaterialTheme.typography.displayLarge,
-        )
-
-        Spacer(modifier = Modifier.size(20.dp))
-
         LazyVerticalStaggeredGrid(
             columns = StaggeredGridCells.Fixed(4),
             contentPadding = PaddingValues(16.dp),
@@ -119,6 +128,31 @@ private fun AppSelection(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             userScrollEnabled = true,
         ) {
+            item {
+                Card(
+                    onClick = { onEvent(TimeSelectionEvent.StartTimerOnly) },
+                    modifier = Modifier.size(100.dp),
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Timer,
+                            contentDescription = stringResource(R.string.start_timer_only),
+                            modifier = Modifier.size(48.dp)
+                        )
+                        Text(
+                            text = stringResource(R.string.start_timer_only),
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodySmall,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+            }
             items(state.installedApps) { app ->
                 Card(
                     onClick = { onEvent(TimeSelectionEvent.OnAppSelected(app)) },
@@ -136,7 +170,10 @@ private fun AppSelection(
                         )
                         Text(
                             text = app.label,
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodySmall,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 }
@@ -153,80 +190,65 @@ private fun AppSelection(
 @Composable
 private fun TimerSetup(
     state: TimeSelectionState,
-    onEvent: (TimeSelectionEvent) -> Unit,
-    modifier: Modifier = Modifier,
+    onEvent: (TimeSelectionEvent) -> Unit
 ) {
-    Column(
-        modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
+    val focusRequester = remember { FocusRequester() }
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
     ) {
-        val focusRequester = remember { FocusRequester() }
-
-        Text(
-            text = stringResource(R.string.timer_setup_title),
-            modifier = Modifier.padding(top = 40.dp),
-            style = MaterialTheme.typography.displayLarge,
-        )
-
-        Spacer(modifier = Modifier.size(20.dp))
-
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center,
+        LazyVerticalStaggeredGrid(
+            columns = StaggeredGridCells.Fixed(4),
+            contentPadding = PaddingValues(16.dp),
+            modifier = Modifier.focusRequester(focusRequester),
+            verticalItemSpacing = 16.dp,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            userScrollEnabled = true,
         ) {
-            LazyVerticalStaggeredGrid(
-                columns = StaggeredGridCells.Fixed(4),
-                contentPadding = PaddingValues(16.dp),
-                modifier = Modifier.focusRequester(focusRequester),
-                verticalItemSpacing = 16.dp,
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                userScrollEnabled = true,
-            ) {
-                if (BuildConfig.DEBUG) {
-                    item {
-                        TimeOption(
-                            time = "DEBUG",
-                            isInDeleteMode = false,
-                            isEasterEgg = state.showEasterEgg,
-                            onClick = { onEvent(TimeSelectionEvent.OnTimeSelected(debugTimeOption)) },
-                            onLongClick = { onEvent(TimeSelectionEvent.ShowEasterEgg) },
-                        )
-                    }
-                }
-
-                items(state.timeOptions, key = { it.time }) { item ->
-                    val isInDeleteMode = state.itemInDeleteMode == item
-                    TimeOption(
-                        time = item.time,
-                        isInDeleteMode = isInDeleteMode,
-                        isEasterEgg = false,
-                        onClick = {
-                            if (isInDeleteMode) {
-                                onEvent(TimeSelectionEvent.OnDeleteItem(item))
-                            } else {
-                                onEvent(TimeSelectionEvent.OnTimeSelected(item))
-                            }
-                        },
-                        onLongClick = { onEvent(TimeSelectionEvent.OnTimeItemLongPress(item)) },
-                    )
-                }
-
+            if (BuildConfig.DEBUG) {
                 item {
                     TimeOption(
-                        time = "Custom",
+                        time = "DEBUG",
                         isInDeleteMode = false,
                         isEasterEgg = state.showEasterEgg,
-                        onClick = { onEvent(TimeSelectionEvent.ShowCustomTimeDialog) },
+                        onClick = { onEvent(TimeSelectionEvent.OnTimeSelected(debugTimeOption)) },
                         onLongClick = { onEvent(TimeSelectionEvent.ShowEasterEgg) },
                     )
                 }
             }
-        }
 
-        LaunchedEffect(Unit) {
-            focusRequester.requestFocus()
+            items(state.timeOptions, key = { it.time }) { item ->
+                val isInDeleteMode = state.itemInDeleteMode == item
+                TimeOption(
+                    time = item.time,
+                    isInDeleteMode = isInDeleteMode,
+                    isEasterEgg = false,
+                    onClick = {
+                        if (isInDeleteMode) {
+                            onEvent(TimeSelectionEvent.OnDeleteItem(item))
+                        } else {
+                            onEvent(TimeSelectionEvent.OnTimeSelected(item))
+                        }
+                    },
+                    onLongClick = { onEvent(TimeSelectionEvent.OnTimeItemLongPress(item)) },
+                )
+            }
+
+            item {
+                TimeOption(
+                    time = "Custom",
+                    isInDeleteMode = false,
+                    isEasterEgg = state.showEasterEgg,
+                    onClick = { onEvent(TimeSelectionEvent.ShowCustomTimeDialog) },
+                    onLongClick = { onEvent(TimeSelectionEvent.ShowEasterEgg) },
+                )
+            }
         }
+    }
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
     }
 }
 
