@@ -28,6 +28,33 @@ class TvSleepApplication :
         log.d { "onCreate" }
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
         timeKeeper = TimeKeeper.getInstance()
+        observeTimerState()
+    }
+
+    private fun observeTimerState() {
+        timeKeeper.timerState
+            .distinctUntilChangedBy { it is TimerState.Started } // Only react to changes in running state
+            .onEach { timerState ->
+                log.d { "observeTimerState - new state: $timerState, isStarted: ${timerState is TimerState.Started}" } // Add this log
+                if (timerState is TimerState.Started) {
+                    log.d { "observeTimerState - Timer is Started. Starting service and deciding on overlay." } // Add this log
+                    startSleepService()
+                    if (!ProcessLifecycleOwner
+                            .get()
+                            .lifecycle.currentState
+                            .isAtLeast(androidx.lifecycle.Lifecycle.State.STARTED)
+                    ) {
+                        log.d { "observeTimerState - App in background, sending SHOW_OVERLAY" } // Add this log
+                        sendOverlayCommand(SleepService.ACTION_SHOW_OVERLAY)
+                    } else {
+                        log.d { "observeTimerState - App in foreground, sending HIDE_OVERLAY" } // Add this log
+                        sendOverlayCommand(SleepService.ACTION_HIDE_OVERLAY)
+                    }
+                } else {
+                    log.d { "observeTimerState - Timer is NOT Started. Stopping service." } // Add this log
+                    stopSleepService()
+                }
+            }.launchIn(applicationScope)
     }
 
     override fun onStart(owner: LifecycleOwner) {

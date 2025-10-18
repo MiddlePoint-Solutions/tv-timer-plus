@@ -31,11 +31,16 @@ fun MainTimer(
     ) {
 
         val localDensity = LocalDensity.current
-        val fontSize = remember(formattedTime.length, constraints.maxWidth) {
+        val text = if (formattedTime == "0") {
+            "Bye bye 👋"
+        } else {
+            formattedTime
+        }
+        val fontSize = remember(text.length, constraints.maxWidth) {
             with(localDensity) {
                 // Basic heuristic to fit the text in the circle.
                 // The divisor can be tweaked for better visual results.
-                (constraints.maxWidth / (formattedTime.length * 0.5f + 1f)).toSp()
+                (constraints.maxWidth / (text.length * 0.5f + 1f)).toSp()
             }
         }
 
@@ -55,10 +60,10 @@ fun MainTimer(
         ConstraintLayout(
             modifier = Modifier.fillMaxSize(),
         ) {
-            val (timerText, timerImage) = createRefs()
+            val (timerText) = createRefs()
 
             Text(
-                text = formattedTime,
+                text = text,
                 style =
                 MaterialTheme.typography.displaySmall.copy(
                     fontSize = fontSize,
