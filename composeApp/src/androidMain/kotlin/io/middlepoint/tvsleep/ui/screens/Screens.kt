@@ -10,6 +10,9 @@ sealed class Screen
 data object TimeSelection : Screen()
 
 @Serializable
+data object CustomTime : Screen()
+
+@Serializable
 data object Timer : Screen()
 
 @Serializable

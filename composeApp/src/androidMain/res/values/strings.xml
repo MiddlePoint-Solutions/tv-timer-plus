@@ -21,4 +21,7 @@
     <string name="buffer_size_key">buffer_size</string>
     <string name="key_show_review">show_review</string>
     <string name="key_review_shown_count">review_shown_count</string>
+    <string name="enter_time_in_minutes">Enter time in minutes</string>
+    <string name="save">Save</string>
+    <string name="clear">Clear</string>
 </resources>

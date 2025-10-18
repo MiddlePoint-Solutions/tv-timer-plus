@@ -47,8 +47,6 @@ class HomeViewModel(
             is TimeSelectionEvent.OnTimeSelected -> onTimeSelected(event)
             is TimeSelectionEvent.OnAppSelected -> onAppSelected(event)
             is TimeSelectionEvent.OnBackFromAppSelection -> onBackFromAppSelection()
-            is TimeSelectionEvent.ShowCustomTimeDialog -> showCustomTimeDialog()
-            is TimeSelectionEvent.HideCustomTimeDialog -> hideCustomTimeDialog()
             is TimeSelectionEvent.SaveCustomTime -> saveCustomTime(event)
             is TimeSelectionEvent.OnTimeItemLongPress -> onTimeItemLongPress(event)
             is TimeSelectionEvent.OnDeleteItem -> onDeleteItem(event)
@@ -166,21 +164,13 @@ class HomeViewModel(
         }
     }
 
-    private fun showCustomTimeDialog() {
-        _uiState.value = _uiState.value.copy(showDialog = true, itemInDeleteMode = null)
-    }
-
-    private fun hideCustomTimeDialog() {
-        _uiState.value = _uiState.value.copy(showDialog = false)
-    }
-
     private fun saveCustomTime(event: TimeSelectionEvent.SaveCustomTime) {
-        val timeInMinutes = event.timeInMinutes.toLongOrNull() ?: return
+        val timeInMinutes = event.timeInMinutes
 
         val newTimeOption =
             TimeOptionItem(
                 time = "$timeInMinutes min",
-                label = event.label,
+                label = "Custom",
                 timeInMillis = timeInMinutes.minutes.inWholeMilliseconds,
             )
 
@@ -189,7 +179,7 @@ class HomeViewModel(
         val jsonString = Json.encodeToString(updatedTimeOptions)
         sharedPreferences.edit { putString("time_options", jsonString) }
 
-        _uiState.value = _uiState.value.copy(timeOptions = updatedTimeOptions, showDialog = false)
+        _uiState.value = _uiState.value.copy(timeOptions = updatedTimeOptions)
     }
 
     private fun onTimeItemLongPress(event: TimeSelectionEvent.OnTimeItemLongPress) {
