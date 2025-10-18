@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.time.Duration.Companion.minutes
 
@@ -27,8 +28,18 @@ class HomeViewModel(
 
     private val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(application)
 
+    private val popularApps = listOf(
+        "com.netflix.mediaclient",
+        "com.amazon.firetv.youtube",
+        "com.google.android.youtube.tv",
+        "com.disney.disneyplus",
+        "com.hbo.max",
+        "com.apple.atve.androidtv.appletv",
+    )
+
     init {
         loadTimeOptions()
+        loadUserSelectedApps()
     }
 
     fun onEvent(event: TimeSelectionEvent) {
@@ -44,7 +55,12 @@ class HomeViewModel(
             is TimeSelectionEvent.OnCancelDelete -> onCancelDelete()
             is TimeSelectionEvent.ShowEasterEgg -> showEasterEgg()
             is TimeSelectionEvent.StartTimerOnly -> startTimerOnly()
+            is TimeSelectionEvent.OnAddAppsClicked -> onAddAppsClicked()
         }
+    }
+
+    private fun onAddAppsClicked() {
+        _uiState.value = _uiState.value.copy(appSelectionMode = AppSelectionMode.All)
     }
 
     private fun startTimerOnly() {
@@ -77,8 +93,36 @@ class HomeViewModel(
                     sharedPreferences.edit { putString("time_options", jsonString) }
                     defaultTimeOptions
                 }
-            _uiState.value = TimeSelectionState(timeOptions = initialTimeOptions)
+            _uiState.value = _uiState.value.copy(timeOptions = initialTimeOptions)
         }
+    }
+
+    private fun loadUserSelectedApps() {
+        viewModelScope.launch {
+            val savedUserSelectedApps = sharedPreferences.getString("user_selected_apps", null)
+            if (savedUserSelectedApps != null) {
+                val appPackages = Json.decodeFromString<List<String>>(savedUserSelectedApps)
+                val installedApps = getInstalledApps()
+                val userSelectedApps = appPackages.mapNotNull { packageName ->
+                    installedApps.find { it.packageName == packageName }
+                }
+                _uiState.value = _uiState.value.copy(userSelectedApps = userSelectedApps)
+            }
+        }
+    }
+
+    private fun saveUserSelectedApps(appInfo: AppInfo) {
+        val currentSelectedApps = _uiState.value.userSelectedApps
+        if (currentSelectedApps.contains(appInfo)) return
+
+        val updatedSelectedApps = currentSelectedApps + appInfo
+        val appPackages = updatedSelectedApps.map { it.packageName }
+        val jsonString = Json.encodeToString(appPackages)
+        sharedPreferences.edit { putString("user_selected_apps", jsonString) }
+        _uiState.value = _uiState.value.copy(
+            userSelectedApps = updatedSelectedApps,
+            appSelectionMode = AppSelectionMode.Curated
+        )
     }
 
     private fun onTimeSelected(event: TimeSelectionEvent.OnTimeSelected) {
@@ -86,11 +130,23 @@ class HomeViewModel(
             onCancelDelete()
         } else {
             timeKeeper.selectTime(event.timeOptionItem)
-            _uiState.value = _uiState.value.copy(selectionMode = SelectionMode.App, installedApps = getInstalledApps())
+            val installedApps = getInstalledApps()
+            val popularApps = installedApps.filter { popularApps.contains(it.packageName) }
+
+            _uiState.value = _uiState.value.copy(
+                selectionMode = SelectionMode.App,
+                installedApps = getInstalledApps(),
+                popularApps = popularApps,
+            )
         }
     }
 
     private fun onAppSelected(event: TimeSelectionEvent.OnAppSelected) {
+        if (event.appInfo == AppInfo.ADD_APPS) {
+            onAddAppsClicked()
+            return
+        }
+        saveUserSelectedApps(event.appInfo)
         timeKeeper.start(event.appInfo.packageName)
         viewModelScope.launch {
             delay(500L)
@@ -103,7 +159,11 @@ class HomeViewModel(
     }
 
     private fun onBackFromAppSelection() {
-        _uiState.value = _uiState.value.copy(selectionMode = SelectionMode.Time)
+        if (_uiState.value.appSelectionMode == AppSelectionMode.All) {
+            _uiState.value = _uiState.value.copy(appSelectionMode = AppSelectionMode.Curated)
+        } else {
+            _uiState.value = _uiState.value.copy(selectionMode = SelectionMode.Time)
+        }
     }
 
     private fun showCustomTimeDialog() {

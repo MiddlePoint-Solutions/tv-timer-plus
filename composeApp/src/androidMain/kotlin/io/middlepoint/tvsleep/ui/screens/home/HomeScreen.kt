@@ -17,9 +17,11 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.SentimentVerySatisfied
 import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -120,68 +122,137 @@ private fun AppSelection(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        LazyVerticalStaggeredGrid(
-            columns = StaggeredGridCells.Fixed(4),
-            contentPadding = PaddingValues(16.dp),
-            modifier = Modifier.focusRequester(focusRequester),
-            verticalItemSpacing = 16.dp,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            userScrollEnabled = true,
-        ) {
-            item {
-                Card(
-                    onClick = { onEvent(TimeSelectionEvent.StartTimerOnly) },
-                    modifier = Modifier.size(100.dp),
-                ) {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Timer,
-                            contentDescription = stringResource(R.string.start_timer_only),
-                            modifier = Modifier.size(48.dp)
-                        )
-                        Text(
-                            text = stringResource(R.string.start_timer_only),
-                            textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.bodySmall,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                }
-            }
-            items(state.installedApps) { app ->
-                Card(
-                    onClick = { onEvent(TimeSelectionEvent.OnAppSelected(app)) },
-                    modifier = Modifier.size(100.dp),
-                ) {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Image(
-                            painter = rememberAsyncImagePainter(app.icon),
-                            contentDescription = app.label,
-                            modifier = Modifier.size(48.dp)
-                        )
-                        Text(
-                            text = app.label,
-                            textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.bodySmall,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                }
+        AnimatedContent(targetState = state.appSelectionMode, label = "App selection mode") {
+            when (it) {
+                AppSelectionMode.Curated -> CuratedApps(focusRequester, state, onEvent)
+                AppSelectionMode.All -> AllApps(focusRequester, state, onEvent)
             }
         }
     }
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
+    }
+}
+
+@Composable
+@OptIn(ExperimentalTvMaterial3Api::class)
+private fun AllApps(
+    focusRequester: FocusRequester,
+    state: TimeSelectionState,
+    onEvent: (TimeSelectionEvent) -> Unit
+) {
+    LazyVerticalStaggeredGrid(
+        columns = StaggeredGridCells.Fixed(4),
+        contentPadding = PaddingValues(16.dp),
+        modifier = Modifier.focusRequester(focusRequester),
+        verticalItemSpacing = 16.dp,
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        userScrollEnabled = true,
+    ) {
+        items(state.installedApps) { app ->
+            AppCard(app = app, onEvent = onEvent)
+        }
+    }
+}
+
+@Composable
+@OptIn(ExperimentalTvMaterial3Api::class)
+private fun CuratedApps(
+    focusRequester: FocusRequester,
+    state: TimeSelectionState,
+    onEvent: (TimeSelectionEvent) -> Unit
+) {
+    LazyVerticalStaggeredGrid(
+        columns = StaggeredGridCells.Fixed(4),
+        contentPadding = PaddingValues(16.dp),
+        modifier = Modifier.focusRequester(focusRequester),
+        verticalItemSpacing = 16.dp,
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        userScrollEnabled = true,
+    ) {
+        item {
+            Card(
+                onClick = { onEvent(TimeSelectionEvent.StartTimerOnly) },
+                modifier = Modifier.size(100.dp),
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Timer,
+                        contentDescription = stringResource(R.string.start_timer_only),
+                        modifier = Modifier.size(48.dp)
+                    )
+                    Text(
+                        text = stringResource(R.string.start_timer_only),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodySmall,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+        }
+
+        val allApps = (state.popularApps + state.userSelectedApps).distinctBy { it.packageName }
+        items(allApps) { app ->
+            AppCard(app = app, onEvent = onEvent)
+        }
+        item {
+            Card(
+                onClick = { onEvent(TimeSelectionEvent.OnAddAppsClicked) },
+                modifier = Modifier.size(100.dp),
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = stringResource(R.string.add_apps),
+                        modifier = Modifier.size(48.dp)
+                    )
+                    Text(
+                        text = stringResource(R.string.add_apps),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodySmall,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+@OptIn(ExperimentalTvMaterial3Api::class)
+private fun AppCard(app: AppInfo, onEvent: (TimeSelectionEvent) -> Unit) {
+    Card(
+        onClick = { onEvent(TimeSelectionEvent.OnAppSelected(app)) },
+        modifier = Modifier.size(100.dp),
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Image(
+                painter = rememberAsyncImagePainter(app.icon),
+                contentDescription = app.label,
+                modifier = Modifier.size(48.dp)
+            )
+            Text(
+                text = app.label,
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.bodySmall,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
     }
 }
 
@@ -324,11 +395,8 @@ private fun TimeOption(
 
 @Preview
 @Composable
-private fun HomeScreenPreview() {
+fun HomeScreenPreview() {
     TVsleepTheme {
-        TimerSetup(
-            state = TimeSelectionState(),
-            onEvent = {},
-        )
+        HomeScreen()
     }
 }

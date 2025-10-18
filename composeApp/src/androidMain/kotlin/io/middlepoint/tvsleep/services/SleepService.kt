@@ -54,6 +54,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import androidx.core.content.edit
 
 class SleepService : Service() {
   private val logger = Logger.withTag("SleepService")
@@ -198,7 +199,7 @@ class SleepService : Service() {
           logger.d("Timer finished. Putting device to sleep.")
           try {
             val prefs = PreferenceManager.getDefaultSharedPreferences(applicationContext)
-            prefs.edit().putBoolean("show_review", true).apply()
+            prefs.edit { putBoolean("show_review", true) }
             logger.d("Set show_review preference to true.")
             adb.goToSleep()
           } catch (e: Exception) {

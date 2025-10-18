@@ -14,6 +14,7 @@
     <string name="app_selection_title">Select an App</string>
     <string name="checking_device_setup">Checking Device Setup</string>
     <string name="start_timer_only">Start Timer Only</string>
+    <string name="add_apps">Select App</string>
 
     <string name="auto_shell_key">auto_shell</string>
     <string name="startup_command_key">startup_command</string>

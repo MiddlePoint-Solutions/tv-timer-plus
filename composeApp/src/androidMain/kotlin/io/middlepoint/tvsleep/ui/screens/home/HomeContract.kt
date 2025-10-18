@@ -36,17 +36,28 @@ sealed class TimeSelectionEvent {
     object OnCancelDelete : TimeSelectionEvent()
 
     object ShowEasterEgg : TimeSelectionEvent()
+
+    object OnAddAppsClicked : TimeSelectionEvent()
 }
 
 data class AppInfo(
     val packageName: String,
     val label: String,
     val icon: Drawable?
-)
+) {
+    companion object {
+        val ADD_APPS = AppInfo("add_apps", "Add Apps", null)
+    }
+}
 
 enum class SelectionMode {
     Time,
     App,
+}
+
+enum class AppSelectionMode {
+    Curated,
+    All,
 }
 
 data class TimeSelectionState(
@@ -56,4 +67,7 @@ data class TimeSelectionState(
     val showEasterEgg: Boolean = false,
     val selectionMode: SelectionMode = SelectionMode.Time,
     val installedApps: List<AppInfo> = emptyList(),
+    val popularApps: List<AppInfo> = emptyList(),
+    val userSelectedApps: List<AppInfo> = emptyList(),
+    val appSelectionMode: AppSelectionMode = AppSelectionMode.Curated,
 )
