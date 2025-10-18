@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - An in-app review prompt has been added to gather user feedback.
 - A new app selection screen has been introduced.
+- A new screen for setting custom time options has been introduced.
 
 ### Changed
 - The timer state is now observed for a better user experience.
