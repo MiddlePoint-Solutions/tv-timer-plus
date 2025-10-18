@@ -2,7 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.1.0] - Unreleased
+## [1.2.0]
+
+### Added
+- An in-app review prompt has been added to gather user feedback.
+- A new app selection screen has been introduced.
+
+### Changed
+- The timer state is now observed for a better user experience.
+- The timer overlay is now shown in the final minute of the timer.
+- ViewModel logic has been reorganized and now tracks the selected app.
+
+## [1.1.1]
+
+### Fixed
+- Sleep not working on some TV devices.
+
+## [1.1.0]
 
 ### Added
 - Users can now create and save their own custom time options.

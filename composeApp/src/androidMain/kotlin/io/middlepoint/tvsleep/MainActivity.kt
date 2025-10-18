@@ -31,12 +31,15 @@ import co.touchlab.kermit.Logger
 import com.google.android.play.core.review.ReviewManagerFactory
 import io.middlepoint.tvsleep.ui.screens.Connecting
 import io.middlepoint.tvsleep.ui.screens.ConnectingScreen
+import io.middlepoint.tvsleep.ui.screens.CustomTime
+import io.middlepoint.tvsleep.ui.screens.CustomTimeScreen
 import io.middlepoint.tvsleep.ui.screens.Debug
 import io.middlepoint.tvsleep.ui.screens.DebugScreen
 import io.middlepoint.tvsleep.ui.screens.SetupADB
 import io.middlepoint.tvsleep.ui.screens.SetupScreen
 import io.middlepoint.tvsleep.ui.screens.TimeSelection
 import io.middlepoint.tvsleep.ui.screens.home.HomeScreen
+import io.middlepoint.tvsleep.ui.screens.home.HomeViewModel
 import io.middlepoint.tvsleep.ui.screens.Timer
 import io.middlepoint.tvsleep.ui.screens.timer.TimerScreen
 import io.middlepoint.tvsleep.ui.screens.mapToScreen
@@ -51,6 +54,7 @@ class MainActivity : ComponentActivity() {
 
     setContent {
       val viewModel by viewModels<MainActivityViewModel>()
+      val homeViewModel by viewModels<HomeViewModel>()
       val homeState by viewModel.homeState.collectAsState()
       val navController = rememberNavController()
       val isDebug = remember { BuildConfig.DEBUG }
@@ -79,7 +83,9 @@ class MainActivity : ComponentActivity() {
             }
 
             composable<TimeSelection> {
-              HomeScreen()
+              HomeScreen(viewModel = homeViewModel, onNavigateToCustomTime = {
+                  navController.navigate(CustomTime)
+              })
               LaunchedEffect(Unit) {
                 showReviewIfNeeded()
               }
@@ -89,6 +95,12 @@ class MainActivity : ComponentActivity() {
             }
             composable<SetupADB> {
               SetupScreen()
+            }
+            composable<CustomTime> {
+                CustomTimeScreen(onSave = { time ->
+                    homeViewModel.onEvent(io.middlepoint.tvsleep.ui.screens.home.TimeSelectionEvent.SaveCustomTime(time))
+                    navController.popBackStack()
+                }, onBack = { navController.popBackStack() })
             }
 
             composable<Debug> {

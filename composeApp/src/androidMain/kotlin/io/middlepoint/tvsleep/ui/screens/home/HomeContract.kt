@@ -1,7 +1,6 @@
 package io.middlepoint.tvsleep.ui.screens.home
 
 import android.graphics.drawable.Drawable
-import kotlinx.serialization.Serializable
 
 sealed class TimeSelectionEvent {
     data class OnTimeSelected(
@@ -16,13 +15,8 @@ sealed class TimeSelectionEvent {
 
     object OnBackFromAppSelection : TimeSelectionEvent()
 
-    object ShowCustomTimeDialog : TimeSelectionEvent()
-
-    object HideCustomTimeDialog : TimeSelectionEvent()
-
     data class SaveCustomTime(
-        val timeInMinutes: String,
-        val label: String,
+        val timeInMinutes: Int,
     ) : TimeSelectionEvent()
 
     data class OnTimeItemLongPress(
@@ -62,7 +56,6 @@ enum class AppSelectionMode {
 
 data class TimeSelectionState(
     val timeOptions: List<TimeOptionItem> = emptyList(),
-    val showDialog: Boolean = false,
     val itemInDeleteMode: TimeOptionItem? = null,
     val showEasterEgg: Boolean = false,
     val selectionMode: SelectionMode = SelectionMode.Time,

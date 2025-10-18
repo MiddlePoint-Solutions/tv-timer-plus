@@ -48,7 +48,6 @@ import androidx.tv.material3.Text
 import coil.compose.rememberAsyncImagePainter
 import io.middlepoint.tvsleep.BuildConfig
 import io.middlepoint.tvsleep.R
-import io.middlepoint.tvsleep.ui.screens.CustomTimeDialog
 import io.middlepoint.tvsleep.ui.theme.TVsleepTheme
 
 @OptIn(ExperimentalTvMaterial3Api::class)
@@ -56,6 +55,7 @@ import io.middlepoint.tvsleep.ui.theme.TVsleepTheme
 fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = viewModel(),
+    onNavigateToCustomTime: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -65,15 +65,6 @@ fun HomeScreen(
         } else {
             viewModel.onEvent(TimeSelectionEvent.OnCancelDelete)
         }
-    }
-
-    if (uiState.showDialog) {
-        CustomTimeDialog(
-            onDismissRequest = { viewModel.onEvent(TimeSelectionEvent.HideCustomTimeDialog) },
-            onSave = { time, label ->
-                viewModel.onEvent(TimeSelectionEvent.SaveCustomTime(time, label))
-            },
-        )
     }
 
     Column(
@@ -99,6 +90,7 @@ fun HomeScreen(
                     TimerSetup(
                         state = uiState,
                         onEvent = viewModel::onEvent,
+                        onNavigateToCustomTime = onNavigateToCustomTime
                     )
 
                 SelectionMode.App ->
@@ -261,7 +253,8 @@ private fun AppCard(app: AppInfo, onEvent: (TimeSelectionEvent) -> Unit) {
 @Composable
 private fun TimerSetup(
     state: TimeSelectionState,
-    onEvent: (TimeSelectionEvent) -> Unit
+    onEvent: (TimeSelectionEvent) -> Unit,
+    onNavigateToCustomTime: () -> Unit
 ) {
     val focusRequester = remember { FocusRequester() }
 
@@ -311,7 +304,7 @@ private fun TimerSetup(
                     time = "Custom",
                     isInDeleteMode = false,
                     isEasterEgg = state.showEasterEgg,
-                    onClick = { onEvent(TimeSelectionEvent.ShowCustomTimeDialog) },
+                    onClick = onNavigateToCustomTime,
                     onLongClick = { onEvent(TimeSelectionEvent.ShowEasterEgg) },
                 )
             }
@@ -397,6 +390,6 @@ private fun TimeOption(
 @Composable
 fun HomeScreenPreview() {
     TVsleepTheme {
-        HomeScreen()
+        HomeScreen(onNavigateToCustomTime = {})
     }
 }
