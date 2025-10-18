@@ -3,15 +3,15 @@ agp = "8.13.0"
 kotlin = "2.2.20"
 coreKtx = "1.17.0"
 appcompat = "1.7.1"
-compose = "1.9.0"
+compose = "1.9.1"
 ktlintVersion = "0.4.27"
 tvFoundation = "1.0.0-alpha12"
 tvMaterial = "1.0.1"
 materialIcons = "1.7.8"
 androidx-lifecycle = "2.9.4"
 activityCompose = "1.11.0"
-androidx-navigation-compose= "2.9.0"
-ktor = "3.3.0"
+androidx-navigation-compose= "2.9.1"
+ktor = "3.3.1"
 kermit = "2.0.8"
 ktlint = "13.1.0"
 preferenceKtx = "1.2.1"
@@ -21,7 +21,9 @@ smoothMotion= "1.0.1"
 constraintlayout-compose-multiplatform= "0.6.1"
 nodeJs= "7.1.0"
 kotlinx-serialization = "1.9.0"
-coil = "2.6.0"
+coil = "2.7.0"
+review = "2.0.2"
+review-ktx = "2.0.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -67,6 +69,8 @@ androidx-lifecycle-process = { group = "androidx.lifecycle", name = "lifecycle-p
 
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
+google-play-review = { group = "com.google.android.play", name = "review", version.ref = "review" }
+google-play-review-ktx = { group = "com.google.android.play", name = "review-ktx", version.ref = "review-ktx" }
 
 [plugins]
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }

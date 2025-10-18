@@ -13,9 +13,11 @@
     <string name="timer_setup_title">Set Watch Time</string>
     <string name="app_selection_title">Select an App</string>
     <string name="checking_device_setup">Checking Device Setup</string>
+    <string name="start_timer_only">Start Timer Only</string>
 
     <string name="auto_shell_key">auto_shell</string>
     <string name="startup_command_key">startup_command</string>
     <string name="buffer_size_key">buffer_size</string>
-    <string name="start_timer_only">Start Timer Only</string>
+    <string name="key_show_review">show_review</string>
+    <string name="key_review_shown_count">review_shown_count</string>
 </resources>

@@ -37,6 +37,7 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationCompat
+import androidx.preference.PreferenceManager
 import androidx.tv.material3.MaterialTheme
 import co.touchlab.kermit.Logger
 import io.middlepoint.tvsleep.R
@@ -196,6 +197,9 @@ class SleepService : Service() {
         if (state is TimerState.Finished) {
           logger.d("Timer finished. Putting device to sleep.")
           try {
+            val prefs = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+            prefs.edit().putBoolean("show_review", true).apply()
+            logger.d("Set show_review preference to true.")
             adb.goToSleep()
           } catch (e: Exception) {
             logger.e(e) { "Error putting device to sleep" }

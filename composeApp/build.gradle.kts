@@ -85,6 +85,9 @@ kotlin {
 
             implementation(libs.ktor.serialization.kotlinx.json)
             implementation(libs.ktor.network.tls.certificates)
+
+            implementation(libs.google.play.review)
+            implementation(libs.google.play.review.ktx)
         }
 
         wasmJsMain.dependencies {
