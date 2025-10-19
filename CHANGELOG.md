@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.1]
+
+### Fixed
+- Stopping timer shows App Selection screen.
+
 ## [1.2.0]
 
 ### Added

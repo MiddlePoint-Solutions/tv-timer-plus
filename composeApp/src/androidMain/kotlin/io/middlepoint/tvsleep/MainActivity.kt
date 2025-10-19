@@ -84,7 +84,7 @@ class MainActivity : ComponentActivity() {
 
             composable<TimeSelection> {
               HomeScreen(viewModel = homeViewModel, onNavigateToCustomTime = {
-                  navController.navigate(CustomTime)
+                navController.navigate(CustomTime)
               })
               LaunchedEffect(Unit) {
                 showReviewIfNeeded()
@@ -96,11 +96,16 @@ class MainActivity : ComponentActivity() {
             composable<SetupADB> {
               SetupScreen()
             }
+
             composable<CustomTime> {
-                CustomTimeScreen(onSave = { time ->
-                    homeViewModel.onEvent(io.middlepoint.tvsleep.ui.screens.home.TimeSelectionEvent.SaveCustomTime(time))
-                    navController.popBackStack()
-                }, onBack = { navController.popBackStack() })
+              CustomTimeScreen(onSave = { time ->
+                homeViewModel.onEvent(
+                  io.middlepoint.tvsleep.ui.screens.home.TimeSelectionEvent.SaveCustomTime(
+                    time
+                  )
+                )
+                navController.popBackStack()
+              }, onBack = { navController.popBackStack() })
             }
 
             composable<Debug> {
