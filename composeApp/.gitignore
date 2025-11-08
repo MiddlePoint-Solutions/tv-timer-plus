@@ -1,3 +1,4 @@
 /build
 /src/androidMain/assets/wasmapp/
 /release/
+google-services.json
