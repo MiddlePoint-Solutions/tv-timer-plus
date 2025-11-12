@@ -28,3 +28,5 @@ const val FIVE_HUNDRED = 500L
 const val TIMER_RUNNING_ID = 10000
 const val TIMER_FINISH_RUNNING_ID = 10001
 const val ONE_MINUTE_MILLIS = 60000
+
+const val TV_TIMER_PLUS_WEBSITE = "https://tvtimerplus.com"

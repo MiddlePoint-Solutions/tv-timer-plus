@@ -31,6 +31,10 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
+    <uses-permission
+        android:name="android.permission.POST_NOTIFICATIONS"
+        tools:node="remove" />
+
     <queries>
         <intent>
             <action android:name="android.intent.action.MAIN" />
@@ -63,6 +67,14 @@
             android:name=".services.SleepService"
             android:exported="false"
             android:foregroundServiceType="specialUse" />
+
+<!--        <service-->
+<!--            android:name=".services.MessagingService"-->
+<!--            android:exported="false">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="com.google.firebase.MESSAGING_EVENT" />-->
+<!--            </intent-filter>-->
+<!--        </service>-->
 
 
     </application>

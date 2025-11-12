@@ -1,29 +1,34 @@
 [versions]
 agp = "8.13.0"
-kotlin = "2.2.20"
+firebaseBom = "34.5.0"
+kotlin = "2.2.21"
 coreKtx = "1.17.0"
 appcompat = "1.7.1"
-compose = "1.9.1"
+compose = "1.9.3"
 ktlintVersion = "0.4.27"
 tvFoundation = "1.0.0-alpha12"
 tvMaterial = "1.0.1"
 materialIcons = "1.7.8"
 androidx-lifecycle = "2.9.4"
 activityCompose = "1.11.0"
-androidx-navigation-compose= "2.9.1"
-ktor = "3.3.1"
+androidx-navigation-compose = "2.9.1"
+ktor = "3.3.2"
 kermit = "2.0.8"
 ktlint = "13.1.0"
 preferenceKtx = "1.2.1"
-splash-screen ="1.0.1"
+splash-screen = "1.2.0"
 lifecycleProcessVersion = "2.9.4"
-smoothMotion= "1.0.1"
-constraintlayout-compose-multiplatform= "0.6.1"
-nodeJs= "7.1.0"
+smoothMotion = "1.0.1"
+constraintlayout-compose-multiplatform = "0.6.1"
+nodeJs = "7.1.0"
 kotlinx-serialization = "1.9.0"
 coil = "2.7.0"
 review = "2.0.2"
 review-ktx = "2.0.2"
+google-services = "4.4.4"
+firebase-crashlytics = "3.0.6"
+firebase-messaging = "25.0.1"
+qrose = "1.0.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -44,6 +49,9 @@ androidx-navigation-compose = { module = "org.jetbrains.androidx.navigation:navi
 
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-splash = { module = "androidx.core:core-splashscreen", version.ref = "splash-screen" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+firebase-crashlytics-ndk = { module = "com.google.firebase:firebase-crashlytics-ndk" }
+google-firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 kermit = { group = "co.touchlab", name = "kermit", version.ref = "kermit" }
 androidx-preference-ktx = { group = "androidx.preference", name = "preference-ktx", version.ref = "preferenceKtx" }
 ktlint = { module = "io.nlpez.compose.rules:ktlint", version.ref = "ktlintVersion" }
@@ -71,6 +79,9 @@ kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 google-play-review = { group = "com.google.android.play", name = "review", version.ref = "review" }
 google-play-review-ktx = { group = "com.google.android.play", name = "review-ktx", version.ref = "review-ktx" }
+firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging", version.ref = "firebase-messaging" }
+
+qrose = { module = "io.github.alexzhirkevich:qrose", version.ref = "qrose" }
 
 [plugins]
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
@@ -80,4 +91,6 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 node-js = { id = "com.github.node-gradle.node", version.ref = "nodeJs" }
+google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }
+firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebase-crashlytics" }
 
