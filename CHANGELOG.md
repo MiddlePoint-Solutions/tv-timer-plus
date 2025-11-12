@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0]
+
+### Added
+* A QR code on the setup screen now provides a link to a YouTube video with instructions, including the Android version and device model in the URL parameters.
+* Firebase for basic analytics and to enable future push message communication.
+
 ## [1.2.1]
 
 ### Fixed
