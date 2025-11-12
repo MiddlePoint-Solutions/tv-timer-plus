@@ -46,7 +46,6 @@ kotlin {
       implementation(libs.compose.ui.util)
       implementation(compose.components.resources)
       implementation(compose.components.uiToolingPreview)
-      implementation(libs.compose.ui.tooling)
       implementation(libs.constraintlayout.compose.multiplatform)
 
       implementation(libs.androidx.navigation.compose)
@@ -61,6 +60,7 @@ kotlin {
       implementation(libs.google.firebase.analytics)
       implementation(libs.firebase.messaging)
 
+      implementation(libs.compose.ui.tooling)
       implementation(libs.androidx.core.ktx)
       implementation(libs.androidx.appcompat)
       implementation(libs.androidx.ui)
@@ -112,8 +112,8 @@ android {
     applicationId = "io.middlepoint.tvsleep"
     minSdk = 26
     targetSdk = 36
-    versionCode = 5
-    versionName = "1.2.1"
+    versionCode = 6
+    versionName = "1.3.0"
 
     ndk {
       abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
