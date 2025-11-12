@@ -24,4 +24,6 @@
     <string name="enter_time_in_minutes">Enter time in minutes</string>
     <string name="save">Save</string>
     <string name="clear">Clear</string>
+    <string name="setup_required">Setup Required</string>
+    <string name="setup_description">For best results enable USB and WiFi debugging.\nIf unsure please watch YouTube video with instructions.</string>
 </resources>
