@@ -199,7 +199,8 @@ class SleepService : Service() {
           logger.d("Timer finished. Putting device to sleep.")
           try {
             val prefs = PreferenceManager.getDefaultSharedPreferences(applicationContext)
-            prefs.edit { putBoolean("show_review", true) }
+            val showReviewKey = applicationContext.resources.getString(R.string.key_show_review)
+            prefs.edit { putBoolean(showReviewKey, true) }
             logger.d("Set show_review preference to true.")
             adb.goToSleep()
           } catch (e: Exception) {
