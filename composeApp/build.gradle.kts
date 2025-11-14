@@ -112,8 +112,8 @@ android {
     applicationId = "io.middlepoint.tvsleep"
     minSdk = 26
     targetSdk = 36
-    versionCode = 8
-    versionName = "1.3.1"
+    versionCode = 9
+    versionName = "1.3.2"
 
     ndk {
       abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64")

@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -134,6 +135,10 @@ class SleepService : Service() {
         setContent {
           val overlayVisible by overlayVisibleStateFlow.collectAsState()
 
+          LaunchedEffect(overlayVisible) {
+            logger.d { "overlayVisible: $overlayVisible" }
+          }
+
           AnimatedVisibility(
             visible = overlayVisible,
             enter = fadeIn(tween(700)),
@@ -213,14 +218,8 @@ class SleepService : Service() {
 
   private fun observeFinalMinute() {
     serviceScope.launch {
-      timeKeeper.isInFinalMinute.collectLatest { isInFinalMinute ->
-        if (isInFinalMinute) {
-          overlayVisibleStateFlow.value = true
-        } else {
-          // Optionally, hide the overlay when not in the final minute,
-          // depending on the desired behavior.
-          // overlayVisibleStateFlow.value = false
-        }
+      timeKeeper.isInFinalMinute.collect { isInFinalMinute ->
+        setOverlayVisible(isInFinalMinute)
       }
     }
   }
@@ -239,26 +238,31 @@ class SleepService : Service() {
       ACTION_SHOW_OVERLAY -> {
         logger.d("ACTION_SHOW_OVERLAY received")
         autoHideJob?.cancel()
-        overlayVisibleStateFlow.value = true
+        setOverlayVisible(true)
         startAutoHideJob()
       }
 
       ACTION_HIDE_OVERLAY -> {
         logger.d("ACTION_HIDE_OVERLAY received")
         autoHideJob?.cancel()
-        overlayVisibleStateFlow.value = false
+        setOverlayVisible(false)
       }
     }
     return START_STICKY
   }
 
   private fun startAutoHideJob() {
-    autoHideJob =
-      serviceScope.launch {
-        delay(AUTO_HIDE_DELAY_MS)
-        overlayVisibleStateFlow.value = false
+    autoHideJob = serviceScope.launch {
+      delay(AUTO_HIDE_DELAY_MS)
+      if (!timeKeeper.isInFinalMinute.value) {
+        setOverlayVisible(false)
         logger.d("Overlay hidden after delay")
       }
+    }
+  }
+
+  private fun setOverlayVisible(visible: Boolean) {
+    overlayVisibleStateFlow.value = visible
   }
 
   override fun onDestroy() {
