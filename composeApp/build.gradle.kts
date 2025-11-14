@@ -112,7 +112,7 @@ android {
     applicationId = "io.middlepoint.tvsleep"
     minSdk = 26
     targetSdk = 36
-    versionCode = 7
+    versionCode = 8
     versionName = "1.3.1"
 
     ndk {
