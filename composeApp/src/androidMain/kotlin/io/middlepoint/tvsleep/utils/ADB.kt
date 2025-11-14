@@ -10,7 +10,6 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.preference.PreferenceManager
-import com.draco.ladb.utils.DnsDiscover
 import io.middlepoint.tvsleep.BuildConfig
 import io.middlepoint.tvsleep.R
 import io.middlepoint.tvsleep.model.AdbState

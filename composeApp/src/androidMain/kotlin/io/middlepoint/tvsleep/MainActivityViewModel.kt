@@ -7,7 +7,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.preference.PreferenceManager
 import co.touchlab.kermit.Logger
-import com.draco.ladb.utils.DnsDiscover
+import io.middlepoint.tvsleep.utils.DnsDiscover
 import io.middlepoint.tvsleep.model.AdbState
 import io.middlepoint.tvsleep.model.HomeState
 import io.middlepoint.tvsleep.model.mapToHomeState
