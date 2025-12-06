@@ -7,13 +7,13 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.preference.PreferenceManager
 import co.touchlab.kermit.Logger
-import io.middlepoint.tvsleep.utils.DnsDiscover
 import io.middlepoint.tvsleep.model.AdbState
 import io.middlepoint.tvsleep.model.HomeState
 import io.middlepoint.tvsleep.model.mapToHomeState
 import io.middlepoint.tvsleep.timer.TimeKeeper
 import io.middlepoint.tvsleep.timer.TimerController
 import io.middlepoint.tvsleep.utils.ADB
+import io.middlepoint.tvsleep.utils.DnsDiscover
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow

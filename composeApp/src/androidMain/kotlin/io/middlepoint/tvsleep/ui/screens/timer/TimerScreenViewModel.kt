@@ -6,7 +6,6 @@ import io.middlepoint.tvsleep.timer.TimeKeeper
 import kotlinx.coroutines.flow.StateFlow
 
 class TimerScreenViewModel : ViewModel() {
-
     private val timeKeeper: TimeKeeper = TimeKeeper.getInstance() // Changed to TimeKeeper to access selectedTimeOptionLabel
 
     val timerScreenState: StateFlow<TimerState> = timeKeeper.timerState
@@ -24,5 +23,4 @@ class TimerScreenViewModel : ViewModel() {
     fun onDelete() {
         timeKeeper.stopTimerAndReset()
     }
-  
 }
