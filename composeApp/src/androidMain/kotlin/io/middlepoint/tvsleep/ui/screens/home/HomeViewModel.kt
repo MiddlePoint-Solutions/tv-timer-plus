@@ -79,10 +79,20 @@ class HomeViewModel(
     mainIntent.addCategory(Intent.CATEGORY_LAUNCHER)
     val packages = pm.queryIntentActivities(mainIntent, 0)
     return packages.map {
+      val label = try {
+        it.loadLabel(pm).toString()
+      } catch (e: Exception) {
+        it.activityInfo.packageName
+      }
+      val icon = try {
+        it.loadIcon(pm)
+      } catch (e: Exception) {
+        null
+      }
       AppInfo(
         packageName = it.activityInfo.packageName,
-        label = it.loadLabel(pm).toString(),
-        icon = it.loadIcon(pm)
+        label = label,
+        icon = icon
       )
     }
   }
