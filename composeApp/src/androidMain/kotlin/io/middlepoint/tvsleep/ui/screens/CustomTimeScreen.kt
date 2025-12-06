@@ -81,24 +81,24 @@ fun CustomTimeScreen(
     ) {
       Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         for (i in 1..3) {
-          NumberButton(number = i, onClick = { selectedTime += i })
+          NumberButton(number = i, onClick = { if (selectedTime.length < 4) selectedTime += i })
         }
       }
       Spacer(modifier = Modifier.height(12.dp))
       Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         for (i in 4..6) {
-          NumberButton(number = i, onClick = { selectedTime += i })
+          NumberButton(number = i, onClick = { if (selectedTime.length < 4) selectedTime += i })
         }
       }
       Spacer(modifier = Modifier.height(12.dp))
       Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         for (i in 7..9) {
-          NumberButton(number = i, onClick = { selectedTime += i })
+          NumberButton(number = i, onClick = { if (selectedTime.length < 4) selectedTime += i })
         }
       }
       Spacer(modifier = Modifier.height(12.dp))
       Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        NumberButton(number = 0, onClick = { selectedTime += 0 })
+        NumberButton(number = 0, onClick = { if (selectedTime.length < 4) selectedTime += 0 })
       }
     }
 
@@ -115,7 +115,7 @@ fun CustomTimeScreen(
 
       Card(onClick = {
         if (selectedTime.isNotEmpty()) {
-          onSave(selectedTime.toInt())
+          selectedTime.toIntOrNull()?.let { onSave(it) }
         }
       }) {
         Text(
