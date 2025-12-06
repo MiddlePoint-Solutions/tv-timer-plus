@@ -149,7 +149,7 @@ class MainActivity : ComponentActivity() {
     val reviewShownCount = prefs.getInt(reviewShownKey, 0)
     val logger = Logger.withTag("MainActivity")
 
-    if (shouldShowReview && reviewShownCount < 2) {
+    if (shouldShowReview && reviewShownCount < 3) {
       val reviewManager = ReviewManagerFactory.create(this)
       val request = reviewManager.requestReviewFlow()
       request.addOnCompleteListener { task ->
