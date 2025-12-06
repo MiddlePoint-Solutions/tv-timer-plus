@@ -66,6 +66,9 @@ fun CircularProgressWithThumb(
         val diameterOffset = stroke.width / 2
         val arcDimen = size.width - 2 * diameterOffset // Pre-calculate arcDimen
 
+        if (arcDimen <= 0) return@Canvas
+
+
         drawArcBackground(
             startAngle,
             (1 - progress) * 360,
