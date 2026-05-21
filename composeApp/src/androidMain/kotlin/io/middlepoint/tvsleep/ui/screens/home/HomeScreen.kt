@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
@@ -48,6 +49,7 @@ import androidx.tv.material3.Text
 import coil.compose.rememberAsyncImagePainter
 import io.middlepoint.tvsleep.BuildConfig
 import io.middlepoint.tvsleep.R
+import io.middlepoint.tvsleep.ui.components.V2Header
 import io.middlepoint.tvsleep.ui.theme.TVsleepTheme
 
 @OptIn(ExperimentalTvMaterial3Api::class)
@@ -70,22 +72,9 @@ fun HomeScreen(
   Column(
     modifier = modifier
       .fillMaxSize()
-      .padding(20.dp),
+      .padding(top = 72.dp, start = 96.dp, end = 96.dp, bottom = 64.dp),
     horizontalAlignment = Alignment.CenterHorizontally,
   ) {
-    val title = when (uiState.selectionMode) {
-      SelectionMode.Time -> stringResource(R.string.timer_setup_title)
-      SelectionMode.App -> stringResource(R.string.app_selection_title)
-    }
-
-    Text(
-      text = title,
-      modifier = Modifier.padding(top = 40.dp),
-      style = MaterialTheme.typography.displayLarge,
-    )
-
-    Spacer(modifier = Modifier.size(20.dp))
-
     AnimatedContent(targetState = uiState.selectionMode, label = "Time/App selection") {
       when (it) {
         SelectionMode.Time ->
@@ -156,14 +145,27 @@ private fun CuratedApps(
   state: TimeSelectionState,
   onEvent: (TimeSelectionEvent) -> Unit
 ) {
-  LazyVerticalStaggeredGrid(
-    columns = StaggeredGridCells.Fixed(4),
-    contentPadding = PaddingValues(16.dp),
-    modifier = Modifier.focusRequester(focusRequester),
-    verticalItemSpacing = 16.dp,
-    horizontalArrangement = Arrangement.spacedBy(16.dp),
-    userScrollEnabled = true,
+  Column(
+    modifier = Modifier.fillMaxSize(),
+    horizontalAlignment = Alignment.CenterHorizontally
   ) {
+    V2Header(
+      step = 2,
+      totalSteps = 2,
+      eyebrow = "STEP 2 OF 2 · PICK AN APP",
+      title = stringResource(R.string.app_selection_title)
+    )
+
+    Spacer(modifier = Modifier.height(32.dp))
+
+    LazyVerticalStaggeredGrid(
+      columns = StaggeredGridCells.Fixed(4),
+      contentPadding = PaddingValues(16.dp),
+      modifier = Modifier.focusRequester(focusRequester),
+      verticalItemSpacing = 16.dp,
+      horizontalArrangement = Arrangement.spacedBy(16.dp),
+      userScrollEnabled = true,
+    ) {
     item {
       Card(
         onClick = { onEvent(TimeSelectionEvent.StartTimerOnly) },
@@ -219,7 +221,8 @@ private fun CuratedApps(
         }
       }
     }
-  }
+    } // end LazyVerticalStaggeredGrid
+  } // end Column
 }
 
 @Composable
@@ -264,14 +267,27 @@ private fun TimerSetup(
     modifier = Modifier.fillMaxSize(),
     contentAlignment = Alignment.Center,
   ) {
-    LazyVerticalStaggeredGrid(
-      columns = StaggeredGridCells.Fixed(4),
-      contentPadding = PaddingValues(16.dp),
-      modifier = Modifier.focusRequester(focusRequester),
-      verticalItemSpacing = 16.dp,
-      horizontalArrangement = Arrangement.spacedBy(16.dp),
-      userScrollEnabled = true,
+    Column(
+      modifier = Modifier.fillMaxSize(),
+      horizontalAlignment = Alignment.CenterHorizontally
     ) {
+      V2Header(
+        step = 1,
+        totalSteps = 2,
+        eyebrow = "STEP 1 OF 2 · PICK A DURATION",
+        title = stringResource(R.string.timer_setup_title)
+      )
+
+      Spacer(modifier = Modifier.height(32.dp))
+
+      LazyVerticalStaggeredGrid(
+        columns = StaggeredGridCells.Fixed(4),
+        contentPadding = PaddingValues(16.dp),
+        modifier = Modifier.focusRequester(focusRequester),
+        verticalItemSpacing = 16.dp,
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        userScrollEnabled = true,
+      ) {
       if (BuildConfig.DEBUG) {
         item {
           TimeOption(
@@ -311,7 +327,8 @@ private fun TimerSetup(
         )
       }
     }
-  }
+    } // end Column
+  } // end Box
 
   LaunchedEffect(Unit) {
     focusRequester.requestFocus()
