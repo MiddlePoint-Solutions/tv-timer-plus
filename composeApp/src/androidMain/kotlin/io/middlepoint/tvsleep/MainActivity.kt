@@ -9,6 +9,7 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.runtime.LaunchedEffect
@@ -17,6 +18,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -44,6 +46,7 @@ import io.middlepoint.tvsleep.ui.screens.Timer
 import io.middlepoint.tvsleep.ui.screens.timer.TimerScreen
 import io.middlepoint.tvsleep.ui.screens.mapToScreen
 import io.middlepoint.tvsleep.ui.theme.TVsleepTheme
+import io.middlepoint.tvsleep.ui.theme.V2BackgroundBrush
 import androidx.core.content.edit
 
 @Suppress("ktlint:standard:no-consecutive-comments")
@@ -64,11 +67,9 @@ class MainActivity : ComponentActivity() {
           modifier =
             Modifier
               .fillMaxSize()
-              .safeContentPadding(),
-          colors =
-            SurfaceDefaults.colors(
-              containerColor = MaterialTheme.colorScheme.background,
-            ),
+              .safeContentPadding()
+              .background(V2BackgroundBrush),
+          colors = SurfaceDefaults.colors(containerColor = Color.Transparent),
         ) {
           NavHost(
             navController = navController,
