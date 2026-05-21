@@ -1,5 +1,8 @@
 package io.middlepoint.tvsleep.ui.screens.home
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
@@ -34,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -52,6 +56,7 @@ import androidx.tv.material3.Text
 import coil.compose.rememberAsyncImagePainter
 import io.middlepoint.tvsleep.BuildConfig
 import io.middlepoint.tvsleep.R
+import io.middlepoint.tvsleep.ui.components.TVCPBanner
 import io.middlepoint.tvsleep.ui.components.V2FocusableCard
 import io.middlepoint.tvsleep.ui.components.V2Header
 import io.middlepoint.tvsleep.ui.components.dashedBorder
@@ -283,7 +288,23 @@ private fun TimerSetup(
         title = stringResource(R.string.timer_setup_title)
       )
 
-      Spacer(modifier = Modifier.height(32.dp))
+      Spacer(modifier = Modifier.height(24.dp))
+
+      val context = LocalContext.current
+      TVCPBanner(
+        onBannerClick = {
+          try {
+            context.startActivity(
+              Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=io.middlepoint.tvcp"))
+            )
+          } catch (e: ActivityNotFoundException) {
+            context.startActivity(
+              Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=io.middlepoint.tvcp"))
+            )
+          }
+        },
+        modifier = Modifier.padding(bottom = 24.dp)
+      )
 
       LazyVerticalStaggeredGrid(
         columns = StaggeredGridCells.Fixed(4),
