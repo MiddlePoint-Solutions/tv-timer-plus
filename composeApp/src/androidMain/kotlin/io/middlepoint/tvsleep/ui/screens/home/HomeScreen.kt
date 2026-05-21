@@ -5,6 +5,7 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,6 +40,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.tv.material3.Card
 import androidx.tv.material3.CardDefaults
@@ -49,7 +52,9 @@ import androidx.tv.material3.Text
 import coil.compose.rememberAsyncImagePainter
 import io.middlepoint.tvsleep.BuildConfig
 import io.middlepoint.tvsleep.R
+import io.middlepoint.tvsleep.ui.components.V2FocusableCard
 import io.middlepoint.tvsleep.ui.components.V2Header
+import io.middlepoint.tvsleep.ui.components.dashedBorder
 import io.middlepoint.tvsleep.ui.theme.TVsleepTheme
 
 @OptIn(ExperimentalTvMaterial3Api::class)
@@ -282,10 +287,10 @@ private fun TimerSetup(
 
       LazyVerticalStaggeredGrid(
         columns = StaggeredGridCells.Fixed(4),
-        contentPadding = PaddingValues(16.dp),
+        contentPadding = PaddingValues(0.dp),
         modifier = Modifier.focusRequester(focusRequester),
-        verticalItemSpacing = 16.dp,
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalItemSpacing = 22.dp,
+        horizontalArrangement = Arrangement.spacedBy(22.dp),
         userScrollEnabled = true,
       ) {
       if (BuildConfig.DEBUG) {
@@ -322,6 +327,7 @@ private fun TimerSetup(
           time = "Custom",
           isInDeleteMode = false,
           isEasterEgg = state.showEasterEgg,
+          isCustomTile = true,
           onClick = onNavigateToCustomTime,
           onLongClick = { onEvent(TimeSelectionEvent.ShowEasterEgg) },
         )
@@ -347,6 +353,7 @@ private fun TimeOption(
   time: String = "00:00",
   isInDeleteMode: Boolean,
   isEasterEgg: Boolean,
+  isCustomTile: Boolean = false,
   onClick: () -> Unit,
   onLongClick: (() -> Unit)?,
 ) {
@@ -355,15 +362,24 @@ private fun TimeOption(
     label = "Card color",
   )
 
-  Card(
+  val baseModifier = Modifier.height(232.dp)
+  val tileModifier = if (isCustomTile) {
+    baseModifier
+      .dashedBorder()
+      .background(Color.Transparent)
+  } else {
+    baseModifier
+  }
+
+  V2FocusableCard(
     onClick = onClick,
     onLongClick = onLongClick,
-    modifier = Modifier.size(100.dp),
-    shape = CardDefaults.shape(),
-    colors = CardDefaults.colors(containerColor = animatedColor),
+    modifier = tileModifier,
   ) {
     Box(
-      modifier = Modifier.fillMaxSize(),
+      modifier = Modifier
+        .fillMaxSize()
+        .background(if (isCustomTile) Color.Transparent else animatedColor),
       contentAlignment = Alignment.Center,
     ) {
       val contentState =
@@ -377,9 +393,9 @@ private fun TimeOption(
           TimeOptionContentState.Normal -> {
             Text(
               text = time,
-              modifier = Modifier,
-              style = MaterialTheme.typography.headlineLarge,
-              fontWeight = FontWeight.Bold,
+              fontSize = 56.sp,
+              fontWeight = FontWeight.W700,
+              letterSpacing = (-0.025).em,
               textAlign = TextAlign.Center,
             )
           }
